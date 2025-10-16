@@ -1,0 +1,68 @@
+# Dependabot configuration for Navier-Stokes Solvers
+# Keeps dependencies, GitHub Actions, and Docker images up to date
+
+version: 2
+
+updates:
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    reviewers:
+      - "diogoribeiro7"
+    assignees:
+      - "diogoribeiro7"
+
+  # Docker dependencies (if you add Dockerfile)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "docker"
+      include: "scope"
+
+  # Python dependencies (for visualization scripts)
+  - package-ecosystem: "pip"
+    directory: "/scripts"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    reviewers:
+      - "diogoribeiro7"
+    # Ignore specific packages if needed
+    ignore:
+      - dependency-name: "numpy"
+        versions: [">=2.0.0"]  # Example: stay on numpy 1.x
+
+# Note: For C/C++ dependencies, Dependabot doesn't natively support them
+# However, if you add a package manager like Conan or vcpkg, you can add:
+#
+#  - package-ecosystem: "pip"  # For Conan
+#    directory: "/"
+#    schedule:
+#      interval: "weekly"

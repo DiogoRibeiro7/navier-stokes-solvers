@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Finite difference solver
+  fd-solver:
+    build: .
+    image: navier-stokes-solvers:latest
+    container_name: ns-fd-solver
+    command: ./bin/ns_fd_solver
+    volumes:
+      - ./results:/workspace/results
+      - ./src:/workspace/src:ro
+    environment:
+      - OMP_NUM_THREADS=4
+    working_dir: /workspace
+    
+  # Spectral solver
+  spectral-solver:
+    build: .
+    image: navier-stokes-solvers:latest
+    container_name: ns-spectral-solver
+    command: ./bin/ns_spectral_solver
+    volumes:
+      - ./results:/workspace/results
+      - ./src:/workspace/src:ro
+    environment:
+      - OMP_NUM_THREADS=4
+    working_dir: /workspace
+  
+  # Development environment
+  dev:
+    build: .
+    image: navier-stokes-solvers:latest
+    container_name: ns-dev
+    command: /bin/bash
+    volumes:
+      - .:/workspace
+    environment:
+      - OMP_NUM_THREADS=4
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+
+# Usage:
+# Build: docker-compose build
+# Run FD solver: docker-compose run fd-solver
+# Run spectral: docker-compose run spectral-solver
+# Development: docker-compose run dev
