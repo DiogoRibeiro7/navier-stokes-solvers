@@ -1,7 +1,13 @@
 #include "ns_spectral_solver.h"
-#include <time.h>
+#include "../common/performance.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 int main(int argc, char *argv[]) {
+    ns_perf_configure_threading("Spectral solver");
+
     printf("Spectral Navier-Stokes Solver\n");
     printf("Fourier Methods with RK4 Time Integration\n\n");
     
@@ -32,7 +38,8 @@ int main(int argc, char *argv[]) {
     printf("Enstrophy: %.6e\n\n", ns_spectral_compute_enstrophy(data));
     
     // Time integration
-    clock_t start_time = clock();
+    ns_perf_counter wall_timer;
+    ns_perf_counter_start(&wall_timer, 0, 0);
     int step = 0;
     int resolution_adequate = 1;
     
@@ -63,8 +70,9 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    clock_t end_time = clock();
-    double cpu_time = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+    wall_timer.bytes_moved = (size_t)step * (size_t)nx * (size_t)ny * sizeof(double) * 8;
+    ns_perf_counter_stop(&wall_timer);
+    double cpu_time = ns_perf_seconds(&wall_timer.start, &wall_timer.end);
     
     printf("\n=== SIMULATION COMPLETED ===\n");
     printf("Total steps: %d\n", step);
@@ -73,6 +81,10 @@ int main(int argc, char *argv[]) {
     printf("Final enstrophy: %.6e\n", ns_spectral_compute_enstrophy(data));
     printf("CPU time: %.2f seconds\n", cpu_time);
     printf("Steps/second: %.1f\n\n", step / cpu_time);
+    printf("Resident memory: %.2f MiB (peak %.2f MiB)\n",
+           ns_perf_resident_memory() / (1024.0 * 1024.0),
+           ns_perf_peak_resident_memory() / (1024.0 * 1024.0));
+    ns_perf_print_summary("Spectral solver", &wall_timer);
     
     ns_spectral_output_solution(data, "spectral_final_solution.dat");
     ns_spectral_analyze_spectrum(data);

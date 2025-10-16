@@ -1,12 +1,18 @@
 #include "ns_spectral_solver.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 // Compute kinetic energy
 double ns_spectral_compute_energy(NSSpectralData *data) {
     int nx = data->nx, ny = data->ny;
     double energy = 0.0;
     
-    for (int k = 0; k < nx * ny; k++) {
-        energy += 0.5 * (data->u[k]*data->u[k] + data->v[k]*data->v[k]);
+    const int total = nx * ny;
+#pragma omp parallel for reduction(+:energy)
+    for (int k = 0; k < total; k++) {
+        energy += 0.5 * (data->u[k] * data->u[k] + data->v[k] * data->v[k]);
     }
     
     return energy / (nx * ny);
@@ -17,7 +23,9 @@ double ns_spectral_compute_enstrophy(NSSpectralData *data) {
     int nx = data->nx, ny = data->ny;
     double enstrophy = 0.0;
     
-    for (int k = 0; k < nx * ny; k++) {
+    const int total = nx * ny;
+#pragma omp parallel for reduction(+:enstrophy)
+    for (int k = 0; k < total; k++) {
         enstrophy += 0.5 * data->omega[k] * data->omega[k];
     }
     
@@ -31,13 +39,16 @@ int ns_spectral_check_resolution(NSSpectralData *data) {
     double total_energy = 0.0;
     double threshold = 0.8;
     
+    const int spectral_size = nkx * nky;
+    const double max_k = sqrt(data->k2[spectral_size - 1]);
+#pragma omp parallel for collapse(2) reduction(+:total_energy, high_k_energy)
     for (int j = 0; j < nky; j++) {
         for (int i = 0; i < nkx; i++) {
-            int idx = j * nkx + i;
-            double omega_mag2 = cabs(data->omega_hat[idx]) * cabs(data->omega_hat[idx]);
+            const int idx = j * nkx + i;
+            const double omega_mag2 = cabs(data->omega_hat[idx]) * cabs(data->omega_hat[idx]);
             total_energy += omega_mag2;
-            
-            double k_normalized = sqrt(data->k2[idx]) / sqrt(data->k2[nkx * nky - 1]);
+
+            const double k_normalized = (max_k > 0.0) ? sqrt(data->k2[idx]) / max_k : 0.0;
             if (k_normalized > threshold) {
                 high_k_energy += omega_mag2;
             }
@@ -67,12 +78,15 @@ void ns_spectral_analyze_convergence(NSSpectralData *data, int step) {
     int high_modes = 0;
     
     for (int j = 0; j < data->nky; j++) {
+#pragma omp parallel for reduction(max:max_omega_hat) reduction(+:energy_spectrum, high_modes)
         for (int i = 0; i < data->nkx; i++) {
-            int idx = j * data->nkx + i;
-            double omega_mag = cabs(data->omega_hat[idx]);
-            max_omega_hat = fmax(max_omega_hat, omega_mag);
-            
-            if (data->k2[idx] > 0.25 * data->k2[spectral_size-1]) {
+            const int idx = j * data->nkx + i;
+            const double omega_mag = cabs(data->omega_hat[idx]);
+            if (omega_mag > max_omega_hat) {
+                max_omega_hat = omega_mag;
+            }
+
+            if (data->k2[idx] > 0.25 * data->k2[spectral_size - 1]) {
                 energy_spectrum += omega_mag * omega_mag;
                 high_modes++;
             }

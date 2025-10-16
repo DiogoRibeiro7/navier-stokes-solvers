@@ -26,6 +26,7 @@ NSFiniteDiffData* ns_fd_allocate(int nx, int ny, double L, double H, double Re) 
     data->p_old = calloc(total_points, sizeof(double));
     data->F = calloc(2 * total_points, sizeof(double));
     data->G = calloc(total_points, sizeof(double));
+    data->delta = calloc(3 * total_points, sizeof(double));
     
     // Sparse Jacobian matrix (conservative estimate)
     int nnz = 15 * total_points;
@@ -35,7 +36,7 @@ NSFiniteDiffData* ns_fd_allocate(int nx, int ny, double L, double H, double Re) 
     
     // Check allocations
     if (!data->u || !data->v || !data->p || !data->u_old || !data->v_old || 
-        !data->p_old || !data->F || !data->G || !data->J || !data->ia || !data->ja) {
+        !data->p_old || !data->F || !data->G || !data->delta || !data->J || !data->ia || !data->ja) {
         ns_fd_free(data);
         return NULL;
     }
@@ -56,7 +57,7 @@ void ns_fd_free(NSFiniteDiffData *data) {
     
     free(data->u); free(data->v); free(data->p);
     free(data->u_old); free(data->v_old); free(data->p_old);
-    free(data->F); free(data->G);
+    free(data->F); free(data->G); free(data->delta);
     free(data->J); free(data->ia); free(data->ja);
     free(data);
 }

@@ -1,10 +1,26 @@
 #ifndef COMMON_TYPES_H
 #define COMMON_TYPES_H
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
+
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#define NS_RESTRICT restrict
+#elif defined(_MSC_VER)
+#define NS_RESTRICT __restrict
+#elif defined(__GNUC__)
+#define NS_RESTRICT __restrict__
+#else
+#define NS_RESTRICT
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define NS_ASSUME_ALIGNED(ptr, align) (__builtin_assume_aligned((ptr), (align)))
+#else
+#define NS_ASSUME_ALIGNED(ptr, align) (ptr)
+#endif
 
 // Common constants
 #ifndef M_PI

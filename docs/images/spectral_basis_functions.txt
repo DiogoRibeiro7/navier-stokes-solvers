@@ -1,0 +1,1 @@
+Placeholder for spectral basis function visualization (Fourier modes).

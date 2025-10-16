@@ -1,7 +1,13 @@
 #include "ns_fd_solver.h"
-#include <time.h>
+#include "../common/performance.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 int main(int argc, char *argv[]) {
+    ns_perf_configure_threading("Finite Difference solver");
+
     printf("2D Incompressible Navier-Stokes Solver\n");
     printf("Finite Difference Method with Newton-Raphson\n\n");
     
@@ -24,7 +30,8 @@ int main(int argc, char *argv[]) {
     ns_fd_initialize_lid_cavity(data);
     
     // Time integration
-    clock_t start = clock();
+    ns_perf_counter wall_timer;
+    ns_perf_counter_start(&wall_timer, 0, 0);
     int step = 0;
     
     while (data->t < t_final) {
@@ -45,13 +52,18 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    clock_t end = clock();
-    double cpu_time = ((double)(end - start)) / CLOCKS_PER_SEC;
+    wall_timer.bytes_moved = (size_t)step * (size_t)nx * (size_t)ny * sizeof(double) * 6;
+    ns_perf_counter_stop(&wall_timer);
+    double cpu_time = ns_perf_seconds(&wall_timer.start, &wall_timer.end);
     
     printf("\nSimulation completed!\n");
     printf("Total steps: %d\n", step);
     printf("Final time: %.4f\n", data->t);
     printf("CPU time: %.2f seconds\n", cpu_time);
+    printf("Resident memory: %.2f MiB (peak %.2f MiB)\n",
+           ns_perf_resident_memory() / (1024.0 * 1024.0),
+           ns_perf_peak_resident_memory() / (1024.0 * 1024.0));
+    ns_perf_print_summary("FD solver", &wall_timer);
     
     ns_fd_output_solution(data, "fd_final_solution.dat");
     ns_fd_free(data);

@@ -13,9 +13,15 @@ typedef struct {
     double L, H;                   // Domain dimensions
     
     // Flow fields
-    double *u, *v, *p;            // Velocity and pressure
-    double *u_old, *v_old, *p_old; // Previous time step
-    double *F, *G;                 // RHS vectors
+    double *NS_RESTRICT u;
+    double *NS_RESTRICT v;
+    double *NS_RESTRICT p;
+    double *NS_RESTRICT u_old;
+    double *NS_RESTRICT v_old;
+    double *NS_RESTRICT p_old;
+    double *NS_RESTRICT F;
+    double *NS_RESTRICT G;
+    double *NS_RESTRICT delta;
     
     // Sparse Jacobian (CSR format)
     double *J;                     // Matrix values

@@ -1,0 +1,100 @@
+title: Navier-Stokes Solvers
+description: High-fidelity finite-difference and spectral solvers for incompressible Navier-Stokes flows.
+baseurl: ""
+url: ""
+
+remote_theme: "mmistakes/minimal-mistakes"
+minimal_mistakes_skin: "dark"
+
+markdown: kramdown
+highlighter: rouge
+permalink: /:title/
+
+kramdown:
+  input: GFM
+  hard_wrap: false
+  math_engine: mathjax
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-include-cache
+
+search: true
+search_full_content: true
+logo: assets/images/gallery_taylor_green.svg
+
+nav:
+  - title: Installation
+    url: /installation/
+  - title: Tutorials
+    url: /tutorials/
+  - title: Usage Guide
+    url: /usage-guide/
+  - title: Theory
+    children:
+      - title: Mathematical Formulation
+        url: /mathematical-formulation/
+      - title: Numerical Methods
+        url: /numerical-methods/
+      - title: Theory Background
+        url: /theory-background/
+  - title: API & Benchmarks
+    children:
+      - title: API Reference
+        url: /api-reference/
+      - title: Benchmark Results
+        url: /benchmark-results/
+  - title: Gallery
+    url: /gallery/
+  - title: Contributing
+    url: /contributing/
+  - title: FAQ
+    url: /faq/
+
+defaults:
+  - scope:
+      path: "pages"
+      type: "pages"
+    values:
+      layout: single
+      toc: true
+      toc_label: Contents
+      toc_icon: "list"
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: single
+      toc: true
+      toc_label: Contents
+
+sass:
+  load_paths:
+    - _sass
+
+assets:
+  css:
+    - assets/css/custom.css
+
+include:
+  - pages
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+
+footer:
+  links:
+    - label: GitHub
+      icon: fab fa-github
+      url: https://github.com/your-org/navier-stokes-solvers
+    - label: Issues
+      icon: fas fa-bug
+      url: https://github.com/your-org/navier-stokes-solvers/issues

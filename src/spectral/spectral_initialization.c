@@ -1,4 +1,10 @@
 #include "ns_spectral_solver.h"
+#include "../common/performance.h"
+#include <stdlib.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 // Initialize grids and wavenumbers
 void ns_spectral_initialize_grids(NSSpectralData *data) {
@@ -6,18 +12,22 @@ void ns_spectral_initialize_grids(NSSpectralData *data) {
     double Lx = data->Lx, Ly = data->Ly;
     
     // Physical coordinates (uniform for Fourier)
+#pragma omp parallel for
     for (int i = 0; i < nx; i++) {
         data->x[i] = i * Lx / nx;
     }
+#pragma omp parallel for
     for (int j = 0; j < ny; j++) {
         data->y[j] = j * Ly / ny;
     }
     
     // Wavenumbers for FFT
+#pragma omp parallel for
     for (int i = 0; i < data->nkx; i++) {
         data->kx[i] = 2.0 * M_PI * i / Lx;
     }
     
+#pragma omp parallel for
     for (int j = 0; j < data->nky; j++) {
         if (j <= ny/2) {
             data->ky[j] = 2.0 * M_PI * j / Ly;
@@ -27,14 +37,15 @@ void ns_spectral_initialize_grids(NSSpectralData *data) {
     }
     
     // Compute k^2 and dealiasing mask
+#pragma omp parallel for collapse(2)
     for (int j = 0; j < data->nky; j++) {
         for (int i = 0; i < data->nkx; i++) {
-            int idx = j * data->nkx + i;
+            const int idx = j * data->nkx + i;
             data->k2[idx] = data->kx[i] * data->kx[i] + data->ky[j] * data->ky[j];
-            
-            // 2/3 dealiasing rule
-            int dealias_x = (i <= (2 * data->nkx) / 3);
-            int dealias_y = (abs(j <= ny/2 ? j : j - ny) <= (2 * ny) / 6);
+
+            const int dealias_x = (i <= (2 * data->nkx) / 3);
+            const int band = (j <= ny / 2) ? j : j - ny;
+            const int dealias_y = (abs(band) <= (2 * ny) / 6);
             data->dealias_mask[idx] = dealias_x && dealias_y;
         }
     }
@@ -42,6 +53,10 @@ void ns_spectral_initialize_grids(NSSpectralData *data) {
 
 // Initialize FFT plans
 void ns_spectral_initialize_fft_plans(NSSpectralData *data) {
+#ifdef _OPENMP
+    fftw_init_threads();
+    fftw_plan_with_nthreads(ns_perf_active_threads());
+#endif
     data->forward_plan = fftw_plan_dft_r2c_2d(data->ny, data->nx,
                                               data->omega, data->omega_hat,
                                               FFTW_MEASURE);
@@ -56,15 +71,17 @@ void ns_spectral_initialize_taylor_green(NSSpectralData *data) {
     int nx = data->nx, ny = data->ny;
     double Lx = data->Lx, Ly = data->Ly;
     
+#pragma omp parallel for
     for (int j = 0; j < ny; j++) {
+#pragma omp simd
         for (int i = 0; i < nx; i++) {
-            int idx = j * nx + i;
-            double x = data->x[i];
-            double y = data->y[j];
-            
-            data->u[idx] = sin(2*M_PI*x/Lx) * cos(2*M_PI*y/Ly);
-            data->v[idx] = -cos(2*M_PI*x/Lx) * sin(2*M_PI*y/Ly);
-            data->omega[idx] = 2.0 * (2*M_PI/Lx) * cos(2*M_PI*x/Lx) * cos(2*M_PI*y/Ly);
+            const int idx = j * nx + i;
+            const double x = data->x[i];
+            const double y = data->y[j];
+
+            data->u[idx] = sin(2 * M_PI * x / Lx) * cos(2 * M_PI * y / Ly);
+            data->v[idx] = -cos(2 * M_PI * x / Lx) * sin(2 * M_PI * y / Ly);
+            data->omega[idx] = 2.0 * (2 * M_PI / Lx) * cos(2 * M_PI * x / Lx) * cos(2 * M_PI * y / Ly);
             data->p[idx] = 0.0;
         }
     }

@@ -1,4 +1,5 @@
 #include "ns_spectral_solver.h"
+#include "../common/performance.h"
 
 // Allocate spectral solver data
 NSSpectralData* ns_spectral_allocate(int nx, int ny, double Lx, double Ly, double Re) {
@@ -15,6 +16,8 @@ NSSpectralData* ns_spectral_allocate(int nx, int ny, double Lx, double Ly, doubl
     data->dt = 0.01;
     data->t = 0.0;
     data->cfl_factor = 0.3;
+    data->forward_plan = NULL;
+    data->backward_plan = NULL;
     
     // Physical space
     data->u = fftw_alloc_real(nx * ny);
@@ -32,6 +35,11 @@ NSSpectralData* ns_spectral_allocate(int nx, int ny, double Lx, double Ly, doubl
     data->omega_hat = fftw_alloc_complex(spectral_size);
     data->psi_hat = fftw_alloc_complex(spectral_size);
     data->nonlinear_hat = fftw_alloc_complex(spectral_size);
+    data->rk1_hat = fftw_alloc_complex(spectral_size);
+    data->rk2_hat = fftw_alloc_complex(spectral_size);
+    data->rk3_hat = fftw_alloc_complex(spectral_size);
+    data->rk4_hat = fftw_alloc_complex(spectral_size);
+    data->omega_tmp_hat = fftw_alloc_complex(spectral_size);
     
     // Wavenumbers
     data->kx = malloc(data->nkx * sizeof(double));
@@ -42,7 +50,8 @@ NSSpectralData* ns_spectral_allocate(int nx, int ny, double Lx, double Ly, doubl
     // Check allocations
     if (!data->u || !data->v || !data->p || !data->omega || !data->psi ||
         !data->u_hat || !data->v_hat || !data->omega_hat || !data->psi_hat ||
-        !data->nonlinear_hat || !data->kx || !data->ky || !data->k2 || 
+        !data->nonlinear_hat || !data->rk1_hat || !data->rk2_hat || !data->rk3_hat ||
+        !data->rk4_hat || !data->omega_tmp_hat || !data->kx || !data->ky || !data->k2 || 
         !data->dealias_mask || !data->x || !data->y) {
         ns_spectral_free(data);
         return NULL;
@@ -68,6 +77,11 @@ void ns_spectral_free(NSSpectralData *data) {
     if (data->omega_hat) fftw_free(data->omega_hat);
     if (data->psi_hat) fftw_free(data->psi_hat);
     if (data->nonlinear_hat) fftw_free(data->nonlinear_hat);
+    if (data->rk1_hat) fftw_free(data->rk1_hat);
+    if (data->rk2_hat) fftw_free(data->rk2_hat);
+    if (data->rk3_hat) fftw_free(data->rk3_hat);
+    if (data->rk4_hat) fftw_free(data->rk4_hat);
+    if (data->omega_tmp_hat) fftw_free(data->omega_tmp_hat);
     
     free(data->x); free(data->y);
     free(data->kx); free(data->ky); free(data->k2);
@@ -75,4 +89,7 @@ void ns_spectral_free(NSSpectralData *data) {
     free(data);
     
     fftw_cleanup();
+#ifdef _OPENMP
+    fftw_cleanup_threads();
+#endif
 }

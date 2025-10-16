@@ -1,0 +1,1 @@
+Placeholder for convergence study plots (error vs grid spacing).

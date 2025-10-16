@@ -1,0 +1,13 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 360' role='img' aria-labelledby='gallery_shear_layer_title gallery_shear_layer_desc'>
+  <title id='gallery_shear_layer_title'>Kelvin-Helmholtz</title>
+  <desc id='gallery_shear_layer_desc'>Shear layer roll-up</desc>
+  <defs>
+    <linearGradient id='gallery_shear_layer_gradient' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#2f4858' stop-opacity='0.85'/>
+      <stop offset='100%' stop-color='#33658a' stop-opacity='0.85'/>
+    </linearGradient>
+  </defs>
+  <rect width='600' height='360' fill='url(#gallery_shear_layer_gradient)' rx='18'/>
+  <text x='50%' y='52%' text-anchor='middle' font-family="'Segoe UI',sans-serif" font-size='32' fill='#ffffff' opacity='0.95'>Kelvin-Helmholtz</text>
+  <text x='50%' y='72%' text-anchor='middle' font-family="'Segoe UI',sans-serif" font-size='18' fill='#f0f4ff' opacity='0.85'>Mixing layer</text>
+</svg>

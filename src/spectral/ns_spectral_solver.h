@@ -16,26 +16,36 @@ typedef struct {
     double cfl_factor;             // CFL safety factor
     
     // Physical space arrays
-    double *u, *v, *p;            // Velocity and pressure
-    double *omega;                // Vorticity
-    double *psi;                  // Stream function
-    double *x, *y;                // Grid coordinates
+    double *NS_RESTRICT u;
+    double *NS_RESTRICT v;
+    double *NS_RESTRICT p;
+    double *NS_RESTRICT omega;
+    double *NS_RESTRICT psi;
+    double *NS_RESTRICT x;
+    double *NS_RESTRICT y;
     
     // Spectral space arrays
-    fftw_complex *u_hat, *v_hat;  // Velocity in Fourier space
-    fftw_complex *omega_hat;      // Vorticity in Fourier space
-    fftw_complex *psi_hat;        // Stream function
-    fftw_complex *nonlinear_hat;  // Nonlinear terms
+    fftw_complex *NS_RESTRICT u_hat;
+    fftw_complex *NS_RESTRICT v_hat;
+    fftw_complex *NS_RESTRICT omega_hat;
+    fftw_complex *NS_RESTRICT psi_hat;
+    fftw_complex *NS_RESTRICT nonlinear_hat;
+    fftw_complex *NS_RESTRICT rk1_hat;
+    fftw_complex *NS_RESTRICT rk2_hat;
+    fftw_complex *NS_RESTRICT rk3_hat;
+    fftw_complex *NS_RESTRICT rk4_hat;
+    fftw_complex *NS_RESTRICT omega_tmp_hat;
     
     // Wavenumber arrays
-    double *kx, *ky;              // Wavenumber grids
-    double *k2;                   // k^2 for Laplacian
+    double *NS_RESTRICT kx;
+    double *NS_RESTRICT ky;
+    double *NS_RESTRICT k2;
     
     // FFT plans
     fftw_plan forward_plan, backward_plan;
     
     // Dealiasing mask
-    int *dealias_mask;
+    int *NS_RESTRICT dealias_mask;
     
 } NSSpectralData;
 

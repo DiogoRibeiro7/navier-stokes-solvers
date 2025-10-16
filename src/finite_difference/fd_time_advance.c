@@ -1,4 +1,9 @@
 #include "ns_fd_solver.h"
+#include <string.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 // Compute adaptive timestep
 double ns_fd_adaptive_timestep(NSFiniteDiffData *data) {
@@ -6,6 +11,7 @@ double ns_fd_adaptive_timestep(NSFiniteDiffData *data) {
     double dx = data->dx, dy = data->dy;
     double max_u = 0.0, max_v = 0.0;
     
+#pragma omp parallel for collapse(2) reduction(max:max_u, max_v)
     for (int i = 0; i < ny; i++) {
         for (int j = 0; j < nx; j++) {
             int ij = IDX2D(i, j, nx);

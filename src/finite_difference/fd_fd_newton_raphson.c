@@ -1,140 +1,147 @@
 #include "ns_fd_solver.h"
 
-// Compute convective terms
-static void compute_convection(NSFiniteDiffData *data, double *uu, double *uv) {
-    int nx = data->nx, ny = data->ny;
-    double dx = data->dx, dy = data->dy;
-    
-    for (int i = 1; i < ny - 1; i++) {
-        for (int j = 1; j < nx - 1; j++) {
-            int ij = IDX2D(i, j, nx);
-            
-            // u * du/dx + v * du/dy
-            uu[ij] = data->u[ij] * (data->u[IDX2D(i, j+1, nx)] - data->u[IDX2D(i, j-1, nx)]) / (2*dx) +
-                     data->v[ij] * (data->u[IDX2D(i+1, j, nx)] - data->u[IDX2D(i-1, j, nx)]) / (2*dy);
-            
-            // u * dv/dx + v * dv/dy
-            uv[ij] = data->u[ij] * (data->v[IDX2D(i, j+1, nx)] - data->v[IDX2D(i, j-1, nx)]) / (2*dx) +
-                     data->v[ij] * (data->v[IDX2D(i+1, j, nx)] - data->v[IDX2D(i-1, j, nx)]) / (2*dy);
-        }
-    }
-}
+#include <string.h>
 
-// Compute residual for Newton-Raphson
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 double ns_fd_compute_residual(NSFiniteDiffData *data) {
-    int nx = data->nx, ny = data->ny;
-    double dx = data->dx, dy = data->dy;
-    double dt = data->dt, Re = data->Re;
+    const int nx = data->nx;
+    const int ny = data->ny;
+    const double dx = data->dx;
+    const double dy = data->dy;
+    const double dt = data->dt;
+    const double inv_2dx = 0.5 / dx;
+    const double inv_2dy = 0.5 / dy;
+    const double inv_dx2 = 1.0 / (dx * dx);
+    const double inv_dy2 = 1.0 / (dy * dy);
+    const double inv_Re = 1.0 / data->Re;
+
     double residual = 0.0;
-    
-    double *uu = calloc(nx * ny, sizeof(double));
-    double *uv = calloc(nx * ny, sizeof(double));
-    
-    compute_convection(data, uu, uv);
-    
-    // Momentum equations residual
-    for (int i = 1; i < ny - 1; i++) {
-        for (int j = 1; j < nx - 1; j++) {
-            int ij = IDX2D(i, j, nx);
-            
-            // u-momentum
-            double u_xx = (data->u[IDX2D(i, j+1, nx)] - 2*data->u[ij] + data->u[IDX2D(i, j-1, nx)]) / (dx*dx);
-            double u_yy = (data->u[IDX2D(i+1, j, nx)] - 2*data->u[ij] + data->u[IDX2D(i-1, j, nx)]) / (dy*dy);
-            double dp_dx = (data->p[IDX2D(i, j+1, nx)] - data->p[IDX2D(i, j-1, nx)]) / (2*dx);
-            
-            double R_u = (data->u[ij] - data->u_old[ij])/dt + uu[ij] + dp_dx - (u_xx + u_yy)/Re;
-            data->F[2*ij] = R_u;
-            residual += R_u * R_u;
-            
-            // v-momentum
-            double v_xx = (data->v[IDX2D(i, j+1, nx)] - 2*data->v[ij] + data->v[IDX2D(i, j-1, nx)]) / (dx*dx);
-            double v_yy = (data->v[IDX2D(i+1, j, nx)] - 2*data->v[ij] + data->v[IDX2D(i-1, j, nx)]) / (dy*dy);
-            double dp_dy = (data->p[IDX2D(i+1, j, nx)] - data->p[IDX2D(i-1, j, nx)]) / (2*dy);
-            
-            double R_v = (data->v[ij] - data->v_old[ij])/dt + uv[ij] + dp_dy - (v_xx + v_yy)/Re;
-            data->F[2*ij + 1] = R_v;
-            residual += R_v * R_v;
+
+    double *NS_RESTRICT F = (double *NS_RESTRICT)NS_ASSUME_ALIGNED(data->F, 64);
+    double *NS_RESTRICT G = (double *NS_RESTRICT)NS_ASSUME_ALIGNED(data->G, 64);
+    const double *NS_RESTRICT u = (const double *NS_RESTRICT)NS_ASSUME_ALIGNED(data->u, 64);
+    const double *NS_RESTRICT v = (const double *NS_RESTRICT)NS_ASSUME_ALIGNED(data->v, 64);
+    const double *NS_RESTRICT p = (const double *NS_RESTRICT)NS_ASSUME_ALIGNED(data->p, 64);
+    const double *NS_RESTRICT u_old = (const double *NS_RESTRICT)NS_ASSUME_ALIGNED(data->u_old, 64);
+    const double *NS_RESTRICT v_old = (const double *NS_RESTRICT)NS_ASSUME_ALIGNED(data->v_old, 64);
+
+#pragma omp parallel for collapse(2) reduction(+:residual)
+    for (int i = 1; i < ny - 1; ++i) {
+        for (int j = 1; j < nx - 1; ++j) {
+            const int ij = IDX2D(i, j, nx);
+
+            const double uij = u[ij];
+            const double vij = v[ij];
+
+            const double du_dx = (u[IDX2D(i, j + 1, nx)] - u[IDX2D(i, j - 1, nx)]) * inv_2dx;
+            const double du_dy = (u[IDX2D(i + 1, j, nx)] - u[IDX2D(i - 1, j, nx)]) * inv_2dy;
+            const double dv_dx = (v[IDX2D(i, j + 1, nx)] - v[IDX2D(i, j - 1, nx)]) * inv_2dx;
+            const double dv_dy = (v[IDX2D(i + 1, j, nx)] - v[IDX2D(i - 1, j, nx)]) * inv_2dy;
+
+            const double convection_u = uij * du_dx + vij * du_dy;
+            const double convection_v = uij * dv_dx + vij * dv_dy;
+
+            const double u_lap = (u[IDX2D(i, j + 1, nx)] - 2.0 * uij + u[IDX2D(i, j - 1, nx)]) * inv_dx2 +
+                                 (u[IDX2D(i + 1, j, nx)] - 2.0 * uij + u[IDX2D(i - 1, j, nx)]) * inv_dy2;
+
+            const double v_lap = (v[IDX2D(i, j + 1, nx)] - 2.0 * vij + v[IDX2D(i, j - 1, nx)]) * inv_dx2 +
+                                 (v[IDX2D(i + 1, j, nx)] - 2.0 * vij + v[IDX2D(i - 1, j, nx)]) * inv_dy2;
+
+            const double dp_dx = (p[IDX2D(i, j + 1, nx)] - p[IDX2D(i, j - 1, nx)]) * inv_2dx;
+            const double dp_dy = (p[IDX2D(i + 1, j, nx)] - p[IDX2D(i - 1, j, nx)]) * inv_2dy;
+
+            const double R_u = (uij - u_old[ij]) / dt + convection_u + dp_dx - inv_Re * u_lap;
+            const double R_v = (vij - v_old[ij]) / dt + convection_v + dp_dy - inv_Re * v_lap;
+
+            F[2 * ij] = R_u;
+            F[2 * ij + 1] = R_v;
+
+            const double divergence = du_dx + dv_dy;
+            G[ij] = divergence;
+
+            residual += R_u * R_u + R_v * R_v + divergence * divergence;
         }
     }
-    
-    // Continuity equation residual
-    for (int i = 1; i < ny - 1; i++) {
-        for (int j = 1; j < nx - 1; j++) {
-            int ij = IDX2D(i, j, nx);
-            double du_dx = (data->u[IDX2D(i, j+1, nx)] - data->u[IDX2D(i, j-1, nx)]) / (2*dx);
-            double dv_dy = (data->v[IDX2D(i+1, j, nx)] - data->v[IDX2D(i-1, j, nx)]) / (2*dy);
-            
-            double R_p = du_dx + dv_dy;
-            data->G[ij] = R_p;
-            residual += R_p * R_p;
-        }
-    }
-    
-    free(uu); free(uv);
+
     return sqrt(residual);
 }
 
-// Simplified Jacobian assembly (diagonal approximation)
 void ns_fd_assemble_jacobian(NSFiniteDiffData *data) {
-    int nx = data->nx, ny = data->ny;
-    double dx = data->dx, dy = data->dy;
-    double dt = data->dt, Re = data->Re;
-    
-    // Diagonal dominant approximation for efficiency
-    for (int i = 1; i < ny - 1; i++) {
-        for (int j = 1; j < nx - 1; j++) {
-            int ij = IDX2D(i, j, nx);
-            data->J[ij] = 1.0/dt + 2.0/(Re*dx*dx) + 2.0/(Re*dy*dy);
+    const int nx = data->nx;
+    const int ny = data->ny;
+    const double dx = data->dx;
+    const double dy = data->dy;
+    const double dt = data->dt;
+    const double Re = data->Re;
+    const double diag = 1.0 / dt + 2.0 / (Re * dx * dx) + 2.0 / (Re * dy * dy);
+
+#pragma omp parallel for collapse(2)
+    for (int i = 1; i < ny - 1; ++i) {
+        for (int j = 1; j < nx - 1; ++j) {
+            const int ij = IDX2D(i, j, nx);
+            data->J[ij] = diag;
         }
     }
 }
 
-// Solve linear system (simplified diagonal preconditioned)
 void ns_fd_solve_linear_system(NSFiniteDiffData *data, double *delta) {
-    int nx = data->nx, ny = data->ny;
-    int n = 2 * nx * ny + nx * ny;
-    
-    for (int i = 0; i < n; i++) {
-        if (i < 2 * nx * ny) {
-            delta[i] = -data->F[i] / (1.0/data->dt + 1e-6);
-        } else {
-            int p_idx = i - 2 * nx * ny;
-            delta[i] = -data->G[p_idx];
-        }
-        delta[i] *= 0.1; // Damping
+    const int nx = data->nx;
+    const int ny = data->ny;
+    const int total_points = nx * ny;
+    const double inv_diag = 1.0 / (1.0 / data->dt + 1e-6);
+
+#pragma omp parallel for simd
+    for (int i = 0; i < 2 * total_points; ++i) {
+        delta[i] = -data->F[i] * inv_diag;
+    }
+
+#pragma omp parallel for simd
+    for (int i = 0; i < total_points; ++i) {
+        delta[2 * total_points + i] = -data->G[i];
     }
 }
 
-// Newton-Raphson iteration step
 SolverStatus ns_fd_newton_raphson_step(NSFiniteDiffData *data) {
-    int nx = data->nx, ny = data->ny;
-    int n = 2 * nx * ny + nx * ny;
-    double *delta = calloc(n, sizeof(double));
-    
-    if (!delta) return SOLVER_MEM_ERROR;
-    
-    double residual_norm = ns_fd_compute_residual(data);
-    
+    const int nx = data->nx;
+    const int ny = data->ny;
+    const int total_points = nx * ny;
+    const int n = 3 * total_points;
+    double *NS_RESTRICT delta = (double *NS_RESTRICT)NS_ASSUME_ALIGNED(data->delta, 64);
+
+    if (!delta) {
+        return SOLVER_MEM_ERROR;
+    }
+
+#pragma omp parallel for
+    for (int i = 0; i < n; ++i) {
+        delta[i] = 0.0;
+    }
+
+    const double residual_norm = ns_fd_compute_residual(data);
     if (residual_norm < TOL) {
-        free(delta);
         return SOLVER_SUCCESS;
     }
-    
+
     ns_fd_assemble_jacobian(data);
     ns_fd_solve_linear_system(data, delta);
-    
-    // Update solution
-    for (int i = 1; i < ny - 1; i++) {
-        for (int j = 1; j < nx - 1; j++) {
-            int ij = IDX2D(i, j, nx);
-            data->u[ij] += delta[2*ij];
-            data->v[ij] += delta[2*ij + 1];
-            data->p[ij] += delta[2*nx*ny + ij];
+
+#pragma omp parallel for collapse(2)
+    for (int i = 1; i < ny - 1; ++i) {
+        for (int j = 1; j < nx - 1; ++j) {
+            const int ij = IDX2D(i, j, nx);
+            data->u[ij] += delta[2 * ij];
+            data->v[ij] += delta[2 * ij + 1];
+            data->p[ij] += delta[2 * total_points + ij];
         }
     }
-    
+
     ns_fd_apply_boundary_conditions(data);
-    
-    free(delta);
-    return (residual_norm > 1e6) ? SOLVER_DIVERGED : SOLVER_MAX_ITER;
+
+    if (residual_norm > 1e6) {
+        return SOLVER_DIVERGED;
+    }
+    return SOLVER_MAX_ITER;
 }

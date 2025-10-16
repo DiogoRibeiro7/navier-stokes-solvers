@@ -1,0 +1,117 @@
+---
+layout: splash
+title: "Navier-Stokes Solvers"
+description: "High-fidelity finite-difference and spectral solvers for incompressible flows."
+permalink: /
+header:
+  overlay_color: "#0b132b"
+  overlay_image: assets/images/gallery_turbulence.svg
+  overlay_filter: 0.35
+  actions:
+    - label: "Get Started"
+      url: /installation/
+    - label: "View Tutorials"
+      url: /tutorials/
+---
+
+<section class="landing-intro">
+  <div class="intro-text">
+    <h1>Accelerate Your Computational Fluid Dynamics Research</h1>
+    <p>Navier-Stokes Solvers delivers a battle-tested toolkit featuring second-order finite differences and Fourier spectral discretisations, designed for rapid prototyping and reproducible research.</p>
+    <div class="badge-row">
+      <img src="https://img.shields.io/github/stars/{{ site.github.owner_name }}/{{ site.github.repository_name }}?style=social" alt="GitHub stars badge">
+      <img src="https://img.shields.io/github/forks/{{ site.github.owner_name }}/{{ site.github.repository_name }}?style=social" alt="GitHub forks badge">
+    </div>
+  </div>
+  <div class="intro-code">
+    <h2>Quick Start</h2>
+    <pre><code class="language-bash">git clone {{ site.github.repository_url | default: 'https://github.com/your-org/navier-stokes-solvers' }}
+cd navier-stokes-solvers
+make all
+python scripts/plot_solution.py results/fd_final_solution.dat -o figures/fd_demo
+</code></pre>
+    <p class="meta">Need a deeper dive? Follow the <a href="/tutorials/#tutorial-1-your-first-simulation">Your First Simulation</a> tutorial.</p>
+  </div>
+</section>
+
+<section class="feature-grid">
+  <article>
+    <h3>High-Order Solvers</h3>
+    <p>Switch between implicit finite differences and Fourier pseudospectral methods using the same API, enabling side-by-side validation.</p>
+  </article>
+  <article>
+    <h3>Robust Time Integration</h3>
+    <p>Leverage adaptive Backward Euler and classical RK4 schemes with automated CFL control for stability without manual tuning.</p>
+  </article>
+  <article>
+    <h3>Insightful Analytics</h3>
+    <p>Built-in diagnostics track energy, enstrophy, and convergence, while companion Python scripts create publication-ready figures.</p>
+  </article>
+  <article>
+    <h3>Extensible Architecture</h3>
+    <p>Modular C code, rich documentation, and a contributor guide make it straightforward to add new physics or numerical schemes.</p>
+  </article>
+</section>
+
+<section class="docs-links">
+  <h2>Documentation at a Glance</h2>
+  <div class="link-cards">
+    <a class="link-card" href="/installation/">
+      <h4>Installation</h4>
+      <p>Platform-specific setup, Docker workflow, and verification steps.</p>
+    </a>
+    <a class="link-card" href="/tutorials/">
+      <h4>Tutorials</h4>
+      <p>Follow guided exercises covering simulations, analysis, and validation.</p>
+    </a>
+    <a class="link-card" href="/usage-guide/">
+      <h4>Usage Guide</h4>
+      <p>Learn how to configure runs, interpret outputs, and optimise performance.</p>
+    </a>
+    <a class="link-card" href="/api-reference/">
+      <h4>API Reference</h4>
+      <p>Detailed C function documentation with prototypes and examples.</p>
+    </a>
+  </div>
+</section>
+
+<section class="gallery">
+  <h2>Simulation Gallery</h2>
+  <div class="gallery-grid">
+    <figure>
+      <img src="assets/images/gallery_lid_cavity.svg" alt="Lid-driven cavity streamlines">
+      <figcaption>Lid-driven cavity at Re=1000 with secondary eddies. <a href="/benchmark-results/#lid-driven-cavity-validation">Reproduce &raquo;</a></figcaption>
+    </figure>
+    <figure>
+      <img src="assets/images/gallery_taylor_green.svg" alt="Taylor-Green vortex decay">
+      <figcaption>Taylor-Green vortex spectral decay against analytic solution. <a href="/benchmark-results/#taylor-green-vortex-decay">Reproduce &raquo;</a></figcaption>
+    </figure>
+    <figure>
+      <img src="assets/images/gallery_shear_layer.svg" alt="Kelvin-Helmholtz shear layer">
+      <figcaption>Kelvin-Helmholtz roll-up captured with high-resolution FFTs. <a href="/tutorials/#tutorial-3-parameter-studies">Explore &raquo;</a></figcaption>
+    </figure>
+    <figure>
+      <img src="assets/images/gallery_turbulence.svg" alt="Forced turbulence energy spectrum">
+      <figcaption>Doubly periodic turbulence showcasing a $k^{-5/3}$ spectrum. <a href="/benchmark-results/#spectral-energy-spectra">Analyze &raquo;</a></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="authors">
+  <h2>Maintainers</h2>
+  <div class="author-card">
+    <div>
+      <h3>Diogo Ribeiro</h3>
+      <p>Computational scientist focused on high-order CFD, turbulence modelling, and research software engineering.</p>
+      <ul>
+        <li><a href="mailto:dfr@esmad.ipp.pt">dfr@esmad.ipp.pt</a></li>
+        <li><a href="{{ site.github.repository_url }}">GitHub Repository</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Ready to contribute?</h2>
+  <p>Check the <a href="/contributing/">Contributing Guide</a> for coding standards, testing requirements, and review checklist.</p>
+</section>

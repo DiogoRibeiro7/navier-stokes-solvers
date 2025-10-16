@@ -1,138 +1,44 @@
-# Navier-Stokes Solvers Makefile
-# Author: Diogo Ribeiro (dfr@esmad.ipp.pt)
+# Navier-Stokes Solvers Build System
 
-CC = gcc
-CFLAGS = -O3 -Wall -Wextra -std=c11 -march=native -fopenmp
-INCLUDES = -I./include
-LDFLAGS = -lm
-FFTW_FLAGS = -lfftw3 -lfftw3_omp
+CC              ?= gcc
+CFLAGS_BASE      = -std=c11 -Wall -Wextra -fopenmp
+OPT_FLAGS      ?= -O3 -march=native
+PROFILE_FLAGS  ?=
+CFLAGS          = $(CFLAGS_BASE) $(OPT_FLAGS) $(PROFILE_FLAGS)
+INCLUDES        = -I./include -I./src/common
+LDFLAGS_BASE    = -lm
+FFTW_FLAGS      = -lfftw3 -lfftw3_omp -lfftw3_threads
+LDFLAGS         = $(LDFLAGS_BASE) $(PROFILE_FLAGS)
 
-# Directories
-SRC_FD = src/finite_difference
-SRC_SPECTRAL = src/spectral
-BIN_DIR = bin
-OBJ_DIR = obj
-TEST_DIR = tests
+BIN_DIR         = bin
+OBJ_DIR         = obj
+BENCH_DIR       = benchmarks
 
-# Create directories
-$(shell mkdir -p $(BIN_DIR) $(OBJ_DIR)/fd $(OBJ_DIR)/spectral)
+SRC_COMMON      = src/common
+SRC_FD          = src/finite_difference
+SRC_SPECTRAL    = src/spectral
 
-# Finite Difference solver objects
-FD_OBJS = $(OBJ_DIR)/fd/fd_memory.o \
-          $(OBJ_DIR)/fd/fd_initialization.o \
-          $(OBJ_DIR)/fd/fd_newton_raphson.o \
-          $(OBJ_DIR)/fd/fd_time_advance.o \
-          $(OBJ_DIR)/fd/fd_analysis.o \
-          $(OBJ_DIR)/fd/main_fd.o
+COMMON_OBJS     = $(OBJ_DIR)/common/performance.o
 
-# Spectral solver objects
-SPECTRAL_OBJS = $(OBJ_DIR)/spectral/spectral_memory.o \
-                $(OBJ_DIR)/spectral/spectral_initialization.o \
-                $(OBJ_DIR)/spectral/spectral_transforms.o \
-                $(OBJ_DIR)/spectral/spectral_core.o \
-                $(OBJ_DIR)/spectral/spectral_time_integration.o \
-                $(OBJ_DIR)/spectral/spectral_analysis.o \
-                $(OBJ_DIR)/spectral/spectral_output.o \
-                $(OBJ_DIR)/spectral/main_spectral.o
+FD_CORE_OBJS    = $(OBJ_DIR)/fd/fd_memory.o \
+                  $(OBJ_DIR)/fd/fd_initialization.o \
+                  $(OBJ_DIR)/fd/fd_fd_newton_raphson.o \
+                  $(OBJ_DIR)/fd/fd_time_advance.o \
+                  $(OBJ_DIR)/fd/fd_analysis.o
+FD_OBJS         = $(FD_CORE_OBJS) $(OBJ_DIR)/fd/main_fd.o
 
-# Targets
-.PHONY: all clean fd spectral test help
+SPECTRAL_CORE_OBJS = $(OBJ_DIR)/spectral/spectral_memory.o \
+                     $(OBJ_DIR)/spectral/spectral_initialization.o \
+                     $(OBJ_DIR)/spectral/spectral_transforms.o \
+                     $(OBJ_DIR)/spectral/spectral_core.o \
+                     $(OBJ_DIR)/spectral/spectral_time_integration.o \
+                     $(OBJ_DIR)/spectral/spectral_analysis.o \
+                     $(OBJ_DIR)/spectral/spectral_output.o
+SPECTRAL_OBJS      = $(SPECTRAL_CORE_OBJS) $(OBJ_DIR)/spectral/main_spectral.o
 
-all: fd spectral
+BENCH_OBJS         = $(OBJ_DIR)/bench/performance_benchmark.o
 
-fd: $(BIN_DIR)/ns_fd_solver
-
-spectral: $(BIN_DIR)/ns_spectral_solver
-
-# Finite Difference solver
-$(BIN_DIR)/ns_fd_solver: $(FD_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-	@echo "Built Finite Difference solver: $@"
-
-$(OBJ_DIR)/fd/%.o: $(SRC_FD)/%.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-# Spectral solver
-$(BIN_DIR)/ns_spectral_solver: $(SPECTRAL_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(FFTW_FLAGS)
-	@echo "Built Spectral solver: $@"
-
-$(OBJ_DIR)/spectral/%.o: $(SRC_SPECTRAL)/%.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-# Run tests
-test:
-	@echo "Building and running tests..."
-	@cd $(TEST_DIR) && $(MAKE) test
-
-# Clean
-clean:
-	rm -rf $(BIN_DIR) $(OBJ_DIR)
-	rm -f *.dat
-	@cd $(TEST_DIR) && $(MAKE) clean 2>/dev/null || true
-	@echo "Cleaned build artifacts"
-
-# Help
-help:
-	@echo "Navier-Stokes Solvers Build System"
-	@echo "=================================="
-	@echo "Targets:"
-	@echo "  all       - Build both solvers (default)"
-	@echo "  fd        - Build finite difference solver"
-	@echo "  spectral  - Build spectral solver"
-	@echo "  test      - Build and run all tests"
-	@echo "  clean     - Remove build artifacts"
-	@echo "  help      - Show this message"
-	@echo ""
-	@echo "Requirements:"
-	@echo "  - GCC compiler with C11 support"
-	@echo "  - FFTW3 library (for spectral solver)"
-	@echo "  - OpenMP support (optional, for parallelization)"
-	@echo ""
-	@echo "Usage:"
-	@echo "  make all"
-	@echo "  make test"
-	@echo "  ./bin/ns_fd_solver"
-	@echo "  ./bin/ns_spectral_solver"
-	@echo ""
-	@echo "Testing:"
-	@echo "  cd tests && make test    # Run comprehensive test suite"r@esmad.ipp.pt)
-
-CC = gcc
-CFLAGS = -O3 -Wall -Wextra -std=c11 -march=native -fopenmp
-INCLUDES = -I./include
-LDFLAGS = -lm
-FFTW_FLAGS = -lfftw3 -lfftw3_omp
-
-# Directories
-SRC_FD = src/finite_difference
-SRC_SPECTRAL = src/spectral
-BIN_DIR = bin
-OBJ_DIR = obj
-
-# Create directories
-$(shell mkdir -p $(BIN_DIR) $(OBJ_DIR)/fd $(OBJ_DIR)/spectral)
-
-# Finite Difference solver objects
-FD_OBJS = $(OBJ_DIR)/fd/fd_memory.o \
-          $(OBJ_DIR)/fd/fd_initialization.o \
-          $(OBJ_DIR)/fd/fd_newton_raphson.o \
-          $(OBJ_DIR)/fd/fd_time_advance.o \
-          $(OBJ_DIR)/fd/fd_analysis.o \
-          $(OBJ_DIR)/fd/main_fd.o
-
-# Spectral solver objects
-SPECTRAL_OBJS = $(OBJ_DIR)/spectral/spectral_memory.o \
-                $(OBJ_DIR)/spectral/spectral_initialization.o \
-                $(OBJ_DIR)/spectral/spectral_transforms.o \
-                $(OBJ_DIR)/spectral/spectral_core.o \
-                $(OBJ_DIR)/spectral/spectral_time_integration.o \
-                $(OBJ_DIR)/spectral/spectral_analysis.o \
-                $(OBJ_DIR)/spectral/spectral_output.o \
-                $(OBJ_DIR)/spectral/main_spectral.o
-
-# Targets
-.PHONY: all clean fd spectral help
+.PHONY: all clean fd spectral performance bench pgo test help
 
 all: fd spectral
 
@@ -140,45 +46,70 @@ fd: $(BIN_DIR)/ns_fd_solver
 
 spectral: $(BIN_DIR)/ns_spectral_solver
 
-# Finite Difference solver
-$(BIN_DIR)/ns_fd_solver: $(FD_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-	@echo "Built Finite Difference solver: $@"
+performance:
+	@echo "[build] Optimised performance build"
+	$(MAKE) clean
+	$(MAKE) OPT_FLAGS="-O3 -march=native -flto -funroll-loops -fomit-frame-pointer"
 
-$(OBJ_DIR)/fd/%.o: $(SRC_FD)/%.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+bench: $(BIN_DIR)/performance_benchmark
+	@echo "[bench] Running performance benchmark..."
+	$(BIN_DIR)/performance_benchmark > $(BENCH_DIR)/performance_results.csv
+	@echo "[bench] Results stored in $(BENCH_DIR)/performance_results.csv"
 
-# Spectral solver
-$(BIN_DIR)/ns_spectral_solver: $(SPECTRAL_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(FFTW_FLAGS)
-	@echo "Built Spectral solver: $@"
+pgo:
+	@echo "[build] Profile-guided optimisation workflow"
+	$(MAKE) clean
+	$(MAKE) OPT_FLAGS="$(OPT_FLAGS)" PROFILE_FLAGS="-fprofile-generate"
+	$(BIN_DIR)/performance_benchmark > /dev/null || true
+	$(MAKE) clean
+	$(MAKE) OPT_FLAGS="$(OPT_FLAGS)" PROFILE_FLAGS="-fprofile-use -fprofile-correction"
 
-$(OBJ_DIR)/spectral/%.o: $(SRC_SPECTRAL)/%.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-# Clean
-clean:
-	rm -rf $(BIN_DIR) $(OBJ_DIR)
-	rm -f *.dat
-	@echo "Cleaned build artifacts"
-
-# Help
 help:
 	@echo "Navier-Stokes Solvers Build System"
-	@echo "=================================="
 	@echo "Targets:"
-	@echo "  all       - Build both solvers (default)"
-	@echo "  fd        - Build finite difference solver"
-	@echo "  spectral  - Build spectral solver"
-	@echo "  clean     - Remove build artifacts"
-	@echo "  help      - Show this message"
-	@echo ""
-	@echo "Requirements:"
-	@echo "  - GCC compiler with C11 support"
-	@echo "  - FFTW3 library (for spectral solver)"
-	@echo "  - OpenMP support (optional, for parallelization)"
-	@echo ""
-	@echo "Usage:"
-	@echo "  make all"
-	@echo "  ./bin/ns_fd_solver"
-	@echo "  ./bin/ns_spectral_solver"
+	@echo "  make            Build finite-difference and spectral solvers"
+	@echo "  make fd         Build finite-difference solver only"
+	@echo "  make spectral   Build spectral solver only"
+	@echo "  make performance Rebuild with aggressive optimisation flags"
+	@echo "  make bench      Build and run performance benchmarks"
+	@echo "  make pgo        Execute profile-guided optimisation workflow"
+	@echo "  make test       Build and execute regression tests"
+	@echo "  make clean      Remove build artefacts"
+
+test: all
+	@$(MAKE) -C tests test
+
+$(BIN_DIR)/ns_fd_solver: $(COMMON_OBJS) $(FD_OBJS)
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	@echo "[build] Built $@"
+
+$(BIN_DIR)/ns_spectral_solver: $(COMMON_OBJS) $(SPECTRAL_OBJS)
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(FFTW_FLAGS)
+	@echo "[build] Built $@"
+
+$(BIN_DIR)/performance_benchmark: $(COMMON_OBJS) $(FD_CORE_OBJS) $(SPECTRAL_CORE_OBJS) $(BENCH_OBJS)
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(FFTW_FLAGS)
+	@echo "[build] Built benchmark harness $@"
+
+$(OBJ_DIR)/common/%.o: $(SRC_COMMON)/%.c
+	@mkdir -p $(OBJ_DIR)/common
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(OBJ_DIR)/fd/%.o: $(SRC_FD)/%.c
+	@mkdir -p $(OBJ_DIR)/fd
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(OBJ_DIR)/spectral/%.o: $(SRC_SPECTRAL)/%.c
+	@mkdir -p $(OBJ_DIR)/spectral
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(OBJ_DIR)/bench/%.o: $(BENCH_DIR)/%.c
+	@mkdir -p $(OBJ_DIR)/bench
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+clean:
+	rm -rf $(BIN_DIR) $(OBJ_DIR) pgo-data *.dat benchmarks/performance_results.csv
+	@echo "[clean] Removed build artefacts"
