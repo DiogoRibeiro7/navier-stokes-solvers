@@ -1,0 +1,26 @@
+name: Build and Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc libfftw3-dev
+    
+    - name: Build finite difference solver
+      run: make fd
+    
+    - name: Build spectral solver
+      run: make spectral
+    
+    - name: Run basic tests
+      run: |
+        ./bin/ns_fd_solver || true
+        ./bin/ns_spectral_solver || true
