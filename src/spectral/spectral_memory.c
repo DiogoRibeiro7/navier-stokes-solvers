@@ -1,5 +1,6 @@
 #include "ns_spectral_solver.h"
 #include "../common/performance.h"
+#include <string.h>
 
 // Allocate spectral solver data
 NSSpectralData* ns_spectral_allocate(int nx, int ny, double Lx, double Ly, double Re) {
@@ -40,22 +41,28 @@ NSSpectralData* ns_spectral_allocate(int nx, int ny, double Lx, double Ly, doubl
     data->rk3_hat = fftw_alloc_complex(spectral_size);
     data->rk4_hat = fftw_alloc_complex(spectral_size);
     data->omega_tmp_hat = fftw_alloc_complex(spectral_size);
+    data->sfd_hat = fftw_alloc_complex(spectral_size);
     
     // Wavenumbers
     data->kx = malloc(data->nkx * sizeof(double));
     data->ky = malloc(data->nky * sizeof(double));
     data->k2 = malloc(spectral_size * sizeof(double));
     data->dealias_mask = malloc(spectral_size * sizeof(int));
+    data->hyperviscosity_weights = malloc(spectral_size * sizeof(double));
     
     // Check allocations
     if (!data->u || !data->v || !data->p || !data->omega || !data->psi ||
         !data->u_hat || !data->v_hat || !data->omega_hat || !data->psi_hat ||
         !data->nonlinear_hat || !data->rk1_hat || !data->rk2_hat || !data->rk3_hat ||
-        !data->rk4_hat || !data->omega_tmp_hat || !data->kx || !data->ky || !data->k2 || 
-        !data->dealias_mask || !data->x || !data->y) {
+        !data->rk4_hat || !data->omega_tmp_hat || !data->sfd_hat || !data->kx || !data->ky || !data->k2 || 
+        !data->dealias_mask || !data->x || !data->y || !data->hyperviscosity_weights) {
         ns_spectral_free(data);
         return NULL;
     }
+
+    ns_spectral_hyperviscosity_default(&data->hyperviscosity);
+    memset(data->hyperviscosity_weights, 0, spectral_size * sizeof(double));
+    memset(data->sfd_hat, 0, spectral_size * sizeof(fftw_complex));
     
     return data;
 }
@@ -82,10 +89,12 @@ void ns_spectral_free(NSSpectralData *data) {
     if (data->rk3_hat) fftw_free(data->rk3_hat);
     if (data->rk4_hat) fftw_free(data->rk4_hat);
     if (data->omega_tmp_hat) fftw_free(data->omega_tmp_hat);
+    if (data->sfd_hat) fftw_free(data->sfd_hat);
     
     free(data->x); free(data->y);
     free(data->kx); free(data->ky); free(data->k2);
     free(data->dealias_mask);
+    free(data->hyperviscosity_weights);
     free(data);
     
     fftw_cleanup();

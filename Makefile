@@ -5,10 +5,11 @@ CFLAGS_BASE      = -std=c11 -Wall -Wextra -fopenmp
 OPT_FLAGS      ?= -O3 -march=native
 PROFILE_FLAGS  ?=
 CFLAGS          = $(CFLAGS_BASE) $(OPT_FLAGS) $(PROFILE_FLAGS)
-INCLUDES        = -I./include -I./src/common
+INCLUDES        = -I./include -I./src/common -I./src/analysis -I./src/finite_difference
 LDFLAGS_BASE    = -lm
 FFTW_FLAGS      = -lfftw3 -lfftw3_omp -lfftw3_threads
-LDFLAGS         = $(LDFLAGS_BASE) $(PROFILE_FLAGS)
+HDF5_FLAGS      = -lhdf5
+LDFLAGS         = $(LDFLAGS_BASE) $(PROFILE_FLAGS) $(HDF5_FLAGS)
 
 BIN_DIR         = bin
 OBJ_DIR         = obj
@@ -17,14 +18,22 @@ BENCH_DIR       = benchmarks
 SRC_COMMON      = src/common
 SRC_FD          = src/finite_difference
 SRC_SPECTRAL    = src/spectral
+SRC_OUTPUT      = src/output
+SRC_ANALYSIS    = src/analysis
 
-COMMON_OBJS     = $(OBJ_DIR)/common/performance.o
+COMMON_OBJS     = $(OBJ_DIR)/common/performance.o \
+                  $(OBJ_DIR)/common/checkpoint.o \
+                  $(OBJ_DIR)/common/config_parser.o \
+                  $(OBJ_DIR)/common/forcing.o \
+                  $(OBJ_DIR)/analysis/statistics.o \
+                  $(OBJ_DIR)/output/vtk_writer.o
 
 FD_CORE_OBJS    = $(OBJ_DIR)/fd/fd_memory.o \
                   $(OBJ_DIR)/fd/fd_initialization.o \
                   $(OBJ_DIR)/fd/fd_fd_newton_raphson.o \
                   $(OBJ_DIR)/fd/fd_time_advance.o \
-                  $(OBJ_DIR)/fd/fd_analysis.o
+                  $(OBJ_DIR)/fd/fd_analysis.o \
+                  $(OBJ_DIR)/fd/multigrid.o
 FD_OBJS         = $(FD_CORE_OBJS) $(OBJ_DIR)/fd/main_fd.o
 
 SPECTRAL_CORE_OBJS = $(OBJ_DIR)/spectral/spectral_memory.o \
@@ -32,6 +41,7 @@ SPECTRAL_CORE_OBJS = $(OBJ_DIR)/spectral/spectral_memory.o \
                      $(OBJ_DIR)/spectral/spectral_transforms.o \
                      $(OBJ_DIR)/spectral/spectral_core.o \
                      $(OBJ_DIR)/spectral/spectral_time_integration.o \
+                     $(OBJ_DIR)/spectral/hyperviscosity.o \
                      $(OBJ_DIR)/spectral/spectral_analysis.o \
                      $(OBJ_DIR)/spectral/spectral_output.o
 SPECTRAL_OBJS      = $(SPECTRAL_CORE_OBJS) $(OBJ_DIR)/spectral/main_spectral.o
@@ -106,8 +116,16 @@ $(OBJ_DIR)/spectral/%.o: $(SRC_SPECTRAL)/%.c
 	@mkdir -p $(OBJ_DIR)/spectral
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
+$(OBJ_DIR)/analysis/%.o: $(SRC_ANALYSIS)/%.c
+	@mkdir -p $(OBJ_DIR)/analysis
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
 $(OBJ_DIR)/bench/%.o: $(BENCH_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)/bench
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(OBJ_DIR)/output/%.o: $(SRC_OUTPUT)/%.c
+	@mkdir -p $(OBJ_DIR)/output
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:

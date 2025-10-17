@@ -1,0 +1,1 @@
+Figure 3. Strong scaling of the finite difference and spectral solvers on a dual-socket AMD EPYC 7713 workstation. Both solvers maintain near-ideal scaling up to 16 cores, with the spectral solver benefiting from highly optimised FFT pipelines beyond 32 cores.

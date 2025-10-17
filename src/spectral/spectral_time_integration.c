@@ -51,6 +51,7 @@ void ns_spectral_advance_rk4(NSSpectralData *data) {
     for (int k = 0; k < spectral_size; k++) {
         k1[k] = data->nonlinear_hat[k] - data->k2[k] * data->omega_hat[k] * inv_Re;
     }
+    ns_spectral_hyperviscosity_apply(data, k1, data->omega_hat);
 
     // Stage 2
 #pragma omp parallel for simd
@@ -63,6 +64,7 @@ void ns_spectral_advance_rk4(NSSpectralData *data) {
     for (int k = 0; k < spectral_size; k++) {
         k2[k] = data->nonlinear_hat[k] - data->k2[k] * data->omega_hat[k] * inv_Re;
     }
+    ns_spectral_hyperviscosity_apply(data, k2, data->omega_hat);
 
     // Stage 3
 #pragma omp parallel for simd
@@ -75,6 +77,7 @@ void ns_spectral_advance_rk4(NSSpectralData *data) {
     for (int k = 0; k < spectral_size; k++) {
         k3[k] = data->nonlinear_hat[k] - data->k2[k] * data->omega_hat[k] * inv_Re;
     }
+    ns_spectral_hyperviscosity_apply(data, k3, data->omega_hat);
 
     // Stage 4
 #pragma omp parallel for simd
@@ -87,6 +90,7 @@ void ns_spectral_advance_rk4(NSSpectralData *data) {
     for (int k = 0; k < spectral_size; k++) {
         k4[k] = data->nonlinear_hat[k] - data->k2[k] * data->omega_hat[k] * inv_Re;
     }
+    ns_spectral_hyperviscosity_apply(data, k4, data->omega_hat);
 
     // Final update
 #pragma omp parallel for simd
@@ -94,6 +98,8 @@ void ns_spectral_advance_rk4(NSSpectralData *data) {
         data->omega_hat[k] =
             omega_tmp[k] + dt / 6.0 * (k1[k] + 2.0 * k2[k] + 2.0 * k3[k] + k4[k]);
     }
+
+    ns_spectral_hyperviscosity_post_step(data, data->omega_hat, dt);
 
     data->t += dt;
     ns_spectral_compute_derivatives(data);

@@ -49,6 +49,8 @@ void ns_spectral_initialize_grids(NSSpectralData *data) {
             data->dealias_mask[idx] = dealias_x && dealias_y;
         }
     }
+
+    ns_spectral_hyperviscosity_update_weights(data);
 }
 
 // Initialize FFT plans

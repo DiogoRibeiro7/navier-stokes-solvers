@@ -41,7 +41,10 @@ typedef enum {
     BC_NEUMANN,
     BC_PERIODIC,
     BC_NO_SLIP,
-    BC_FREE_SLIP
+    BC_FREE_SLIP,
+    BC_INFLOW,
+    BC_OUTFLOW,
+    BC_CUSTOM
 } BoundaryCondition;
 
 // Solver status codes

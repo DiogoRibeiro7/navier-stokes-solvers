@@ -5,6 +5,19 @@
 #include <complex.h>
 #include <fftw3.h>
 
+typedef struct {
+    int enabled;
+    double coefficient;
+    int order;
+    double cutoff_ratio;
+    double sfd_strength;
+    double sfd_timescale;
+    int sfd_enabled;
+    double kmax;
+    double cutoff_wavenumber;
+    double inv_bandwidth;
+} NSSpectralHyperviscosityConfig;
+
 // Spectral Navier-Stokes data structure
 typedef struct {
     int nx, ny;                    // Grid dimensions
@@ -46,6 +59,11 @@ typedef struct {
     
     // Dealiasing mask
     int *NS_RESTRICT dealias_mask;
+
+    // Hyperviscosity / selective damping
+    NSSpectralHyperviscosityConfig hyperviscosity;
+    double *NS_RESTRICT hyperviscosity_weights;
+    fftw_complex *NS_RESTRICT sfd_hat;
     
 } NSSpectralData;
 
@@ -78,6 +96,18 @@ double ns_spectral_compute_enstrophy(NSSpectralData *data);
 void ns_spectral_analyze_convergence(NSSpectralData *data, int step);
 void ns_spectral_analyze_spectrum(NSSpectralData *data);
 int ns_spectral_check_resolution(NSSpectralData *data);
+
+// Hyperviscosity / damping
+void ns_spectral_hyperviscosity_default(NSSpectralHyperviscosityConfig *config);
+void ns_spectral_hyperviscosity_set(NSSpectralData *data,
+                                    const NSSpectralHyperviscosityConfig *config);
+void ns_spectral_hyperviscosity_update_weights(NSSpectralData *data);
+void ns_spectral_hyperviscosity_apply(NSSpectralData *data,
+                                      fftw_complex *rhs_hat,
+                                      const fftw_complex *state_hat);
+void ns_spectral_hyperviscosity_post_step(NSSpectralData *data,
+                                          const fftw_complex *state_hat,
+                                          double dt);
 
 // Output
 void ns_spectral_output_solution(NSSpectralData *data, const char *filename);

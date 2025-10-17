@@ -1,0 +1,10 @@
+{
+  "os": ["ubuntu-22.04", "ubuntu-20.04", "macos-latest"],
+  "compiler": {
+    "gcc": ["9", "11", "12"],
+    "clang": ["12", "14", "15"]
+  },
+  "exclude": [
+    {"os": "macos-latest", "compiler": "gcc"}
+  ]
+}

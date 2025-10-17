@@ -1,0 +1,147 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  High-Order Navier-Stokes Solvers: Newton-Raphson Finite
+  Difference and Fourier Spectral Methods
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Diogo
+    family-names: Ribeiro
+    email: dfr@esmad.ipp.pt
+    affiliation: >-
+      ESMAD - Escola Superior de Média Arte e Design,
+      Instituto Politécnico do Porto
+    orcid: 'https://orcid.org/0009-0001-2022-7072'
+identifiers:
+  - type: url
+    value: 'https://github.com/diogoribeiro7/navier-stokes-solvers'
+    description: GitHub repository
+  - type: doi
+    value: 10.5281/zenodo.XXXXXXX
+    description: Zenodo DOI (replace XXXXXXX with actual DOI after archiving)
+repository-code: 'https://github.com/diogoribeiro7/navier-stokes-solvers'
+url: 'https://diogoribeiro7.github.io/navier-stokes-solvers'
+repository-artifact: 'https://github.com/diogoribeiro7/navier-stokes-solvers/releases'
+abstract: >-
+  A collection of high-performance numerical solvers for the
+  2D incompressible Navier-Stokes equations, implementing
+  state-of-the-art computational fluid dynamics techniques.
+  The repository includes two complementary approaches: (1) a
+  finite difference solver with fully implicit Newton-Raphson
+  iteration and adaptive time stepping, and (2) a Fourier
+  spectral pseudospectral method with exponential convergence.
+  Both solvers feature comprehensive validation against
+  analytical solutions (Taylor-Green vortex) and benchmark
+  problems (lid-driven cavity), with extensive test suites
+  ensuring numerical accuracy and physical correctness.
+  Designed for research, education, and production use in
+  computational fluid dynamics.
+keywords:
+  - Navier-Stokes equations
+  - computational fluid dynamics
+  - CFD
+  - spectral methods
+  - finite difference method
+  - Newton-Raphson
+  - incompressible flow
+  - numerical methods
+  - partial differential equations
+  - scientific computing
+  - high-performance computing
+  - turbulence
+  - vorticity
+  - Fourier methods
+  - pseudospectral method
+  - adaptive time stepping
+  - conservation laws
+  - fluid dynamics simulation
+  - numerical analysis
+  - open source software
+license: MIT
+version: 1.0.0
+date-released: '2025-01-16'
+commit: HEAD
+references:
+  - type: article
+    authors:
+      - family-names: Ghia
+        given-names: U.
+      - family-names: Ghia
+        given-names: K. N.
+      - family-names: Shin
+        given-names: C. T.
+    title: >-
+      High-Re solutions for incompressible flow using the
+      Navier-Stokes equations and a multigrid method
+    journal: Journal of Computational Physics
+    volume: 48
+    issue: 3
+    year: 1982
+    start: 387
+    end: 411
+    doi: 10.1016/0021-9991(82)90058-4
+  - type: book
+    authors:
+      - family-names: Canuto
+        given-names: C.
+      - family-names: Hussaini
+        given-names: M. Y.
+      - family-names: Quarteroni
+        given-names: A.
+      - family-names: Zang
+        given-names: T. A.
+    title: 'Spectral Methods: Fundamentals in Single Domains'
+    publisher:
+      name: Springer
+    year: 2007
+    isbn: 978-3-540-30726-6
+    doi: 10.1007/978-3-540-30726-6
+  - type: article
+    authors:
+      - family-names: Taylor
+        given-names: G. I.
+      - family-names: Green
+        given-names: A. E.
+    title: >-
+      Mechanism of the production of small eddies from large ones
+    journal: Proceedings of the Royal Society of London A
+    volume: 158
+    year: 1937
+    start: 499
+    end: 521
+    doi: 10.1098/rspa.1937.0036
+  - type: book
+    authors:
+      - family-names: Peyret
+        given-names: Roger
+    title: 'Spectral Methods for Incompressible Viscous Flow'
+    publisher:
+      name: Springer
+    year: 2002
+    isbn: 978-0-387-95221-0
+    doi: 10.1007/978-1-4757-6557-1
+preferred-citation:
+  type: software
+  authors:
+    - given-names: Diogo
+      family-names: Ribeiro
+      email: dfr@esmad.ipp.pt
+      affiliation: >-
+        ESMAD - Escola Superior de Média Arte e Design,
+        Instituto Politécnico do Porto
+      orcid: 'https://orcid.org/0009-0001-2022-7072'
+  title: >-
+    High-Order Navier-Stokes Solvers: Newton-Raphson Finite
+    Difference and Fourier Spectral Methods
+  version: 1.0.0
+  doi: 10.5281/zenodo.XXXXXXX
+  date-released: '2025-01-16'
+  url: 'https://github.com/diogoribeiro7/navier-stokes-solvers'
+  license: MIT
+  repository-code: 'https://github.com/diogoribeiro7/navier-stokes-solvers'
+  

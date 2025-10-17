@@ -3,8 +3,30 @@
 
 #include "../../include/common_types.h"
 
-// Finite difference Navier-Stokes data structure
+typedef void (*NSBoundaryFunction)(double x, double y, double t,
+                                   double *u, double *v, double *p,
+                                   void *user_data);
+
 typedef struct {
+    BoundaryCondition type;
+    double value_u;
+    double value_v;
+    double value_p;
+    NSBoundaryFunction func;
+    void *user_data;
+} NSBoundaryCondition;
+
+enum {
+    NS_BC_BOTTOM = 0,
+    NS_BC_TOP = 1,
+    NS_BC_LEFT = 2,
+    NS_BC_RIGHT = 3,
+    NS_BC_COUNT = 4
+};
+
+// Finite difference Navier-Stokes data structure
+typedef struct NSFiniteDiffData {
+
     int nx, ny;                    // Grid dimensions
     double dx, dy;                 // Grid spacing
     double Re;                     // Reynolds number
@@ -28,13 +50,17 @@ typedef struct {
     int *ia, *ja;                  // Row/column indices
     
     // Boundary conditions
-    BoundaryCondition bc_type;
-    double bc_values[4];           // [bottom, top, left, right]
+    NSBoundaryCondition boundaries[NS_BC_COUNT];
 } NSFiniteDiffData;
 
 // Memory management
 NSFiniteDiffData* ns_fd_allocate(int nx, int ny, double L, double H, double Re);
 void ns_fd_free(NSFiniteDiffData *data);
+void ns_fd_set_boundary_condition(NSFiniteDiffData *data, int side,
+                                  BoundaryCondition type,
+                                  double value_u, double value_v, double value_p);
+void ns_fd_set_boundary_function(NSFiniteDiffData *data, int side,
+                                 NSBoundaryFunction func, void *user_data);
 
 // Initialization
 void ns_fd_initialize_lid_cavity(NSFiniteDiffData *data);

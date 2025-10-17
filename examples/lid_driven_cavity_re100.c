@@ -183,11 +183,10 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    solver->bc_type = BC_NO_SLIP;
-    solver->bc_values[0] = 0.0;
-    solver->bc_values[1] = 1.0;  // moving lid
-    solver->bc_values[2] = 0.0;
-    solver->bc_values[3] = 0.0;
+    ns_fd_set_boundary_condition(solver, NS_BC_BOTTOM, BC_NO_SLIP, 0.0, 0.0, NAN);
+    ns_fd_set_boundary_condition(solver, NS_BC_TOP, BC_NO_SLIP, 1.0, 0.0, NAN);  // moving lid
+    ns_fd_set_boundary_condition(solver, NS_BC_LEFT, BC_NO_SLIP, 0.0, 0.0, NAN);
+    ns_fd_set_boundary_condition(solver, NS_BC_RIGHT, BC_NO_SLIP, 0.0, 0.0, NAN);
 
     ns_fd_initialize_lid_cavity(solver);
 

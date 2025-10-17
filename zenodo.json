@@ -1,0 +1,65 @@
+{
+  "title": "High-Order Navier-Stokes Solvers: Newton-Raphson Finite Difference and Fourier Spectral Methods",
+  "upload_type": "software",
+  "description": "Open-source suite of finite difference and spectral solvers for the incompressible Navier-Stokes equations with publication-ready artefacts.",
+  "creators": [
+    {
+      "name": "Ribeiro, Diogo",
+      "affiliation": "ESMAD - Instituto Politécnico do Porto",
+      "orcid": "0000-0001-2022-7072"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "Navier-Stokes Solvers Community",
+      "type": "Other",
+      "affiliation": "Open-source contributors"
+    }
+  ],
+  "keywords": [
+    "Navier-Stokes",
+    "computational fluid dynamics",
+    "spectral methods",
+    "finite difference",
+    "turbulence",
+    "open source",
+    "multigrid"
+  ],
+  "communities": [
+    {"identifier": "openscience"},
+    {"identifier": "computational-fluid-dynamics"}
+  ],
+  "license": "MIT",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/diogoribeiro7/navier-stokes-solvers",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://doi.org/10.1016/0021-9991(82)90058-4",
+      "relation": "references",
+      "resource_type": "publication-article"
+    }
+  ],
+  "funding": [
+    {
+      "funder_name": "Instituto Politécnico do Porto",
+      "grant_title": "Open CFD initiative",
+      "grant_number": "CFD-2025-01"
+    }
+  ],
+  "subjects": [
+    {
+      "term": "Physics::Fluid Dynamics"
+    },
+    {
+      "term": "Mathematics::Numerical Analysis"
+    }
+  ],
+  "version": "1.0.0",
+  "publication_date": "2025-01-16",
+  "access_right": "open",
+  "language": "eng",
+  "notes": "Replace with generated DOI after publishing the Zenodo record."
+}

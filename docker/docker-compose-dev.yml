@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  compiler:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    container_name: navier-stokes-compiler
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace
+    environment:
+      - VENV_PATH=/workspace/.venv
+    command: tail -f /dev/null
+
+  jupyter:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    container_name: navier-stokes-jupyter
+    working_dir: /workspace
+    environment:
+      - VENV_PATH=/workspace/.venv
+      - JUPYTER_TOKEN=navierstokes
+    volumes:
+      - ..:/workspace
+    ports:
+      - "8888:8888"
+    command: ["/bin/bash", "-lc", "source ${VENV_PATH}/bin/activate && jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token=${JUPYTER_TOKEN}"]
+
+  docs:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    container_name: navier-stokes-docs
+    working_dir: /workspace
+    environment:
+      - VENV_PATH=/workspace/.venv
+    volumes:
+      - ..:/workspace
+    ports:
+      - "9000:9000"
+    command: ["/bin/bash", "-lc", "source ${VENV_PATH}/bin/activate && python -m http.server 9000 -d docs"]
+
+volumes:
+  workspace:

@@ -40,13 +40,12 @@ NSFiniteDiffData* ns_fd_allocate(int nx, int ny, double L, double H, double Re) 
         ns_fd_free(data);
         return NULL;
     }
-    
-    // Default boundary conditions
-    data->bc_type = BC_NO_SLIP;
-    data->bc_values[0] = 0.0; // bottom
-    data->bc_values[1] = 1.0; // top (lid)
-    data->bc_values[2] = 0.0; // left
-    data->bc_values[3] = 0.0; // right
+
+    // Default boundary conditions: no-slip walls with a moving lid at the top
+    ns_fd_set_boundary_condition(data, NS_BC_BOTTOM, BC_NO_SLIP, 0.0, 0.0, NAN);
+    ns_fd_set_boundary_condition(data, NS_BC_TOP, BC_NO_SLIP, 1.0, 0.0, NAN);
+    ns_fd_set_boundary_condition(data, NS_BC_LEFT, BC_NO_SLIP, 0.0, 0.0, NAN);
+    ns_fd_set_boundary_condition(data, NS_BC_RIGHT, BC_NO_SLIP, 0.0, 0.0, NAN);
     
     return data;
 }
@@ -60,4 +59,33 @@ void ns_fd_free(NSFiniteDiffData *data) {
     free(data->F); free(data->G); free(data->delta);
     free(data->J); free(data->ia); free(data->ja);
     free(data);
+}
+
+void ns_fd_set_boundary_condition(NSFiniteDiffData *data, int side,
+                                  BoundaryCondition type,
+                                  double value_u, double value_v, double value_p) {
+    if (!data || side < 0 || side >= NS_BC_COUNT) {
+        return;
+    }
+
+    NSBoundaryCondition *bc = &data->boundaries[side];
+    bc->type = type;
+    bc->value_u = value_u;
+    bc->value_v = value_v;
+    bc->value_p = value_p;
+
+    if (type != BC_CUSTOM) {
+        bc->func = NULL;
+        bc->user_data = NULL;
+    }
+}
+
+void ns_fd_set_boundary_function(NSFiniteDiffData *data, int side,
+                                 NSBoundaryFunction func, void *user_data) {
+    if (!data || side < 0 || side >= NS_BC_COUNT) {
+        return;
+    }
+
+    data->boundaries[side].func = func;
+    data->boundaries[side].user_data = user_data;
 }

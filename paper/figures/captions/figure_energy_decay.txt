@@ -1,0 +1,1 @@
+Figure 1. Temporal evolution of the normalised kinetic energy for the Taylor–Green vortex at \Rey=1600. The spectral solver exhibits exponential convergence while the implicit finite difference method achieves second-order accuracy. Continuous lines denote spectral results; dashed lines correspond to finite difference runs.

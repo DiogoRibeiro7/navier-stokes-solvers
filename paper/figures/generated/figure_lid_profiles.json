@@ -1,0 +1,8 @@
+{
+  "figure": "Vertical centreline velocity comparison for lid-driven cavity at Re=1000.",
+  "reference": "Ghia et al. (1982)",
+  "resolutions": [
+    128,
+    128
+  ]
+}

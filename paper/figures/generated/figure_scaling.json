@@ -1,0 +1,13 @@
+{
+  "figure": "Strong scaling comparison for finite difference and spectral solvers.",
+  "hardware": "Dual-socket AMD EPYC 7713 (2x32 cores)",
+  "timing_metric": "wall_clock_per_timestep",
+  "cores": [
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0,
+    32.0
+  ]
+}

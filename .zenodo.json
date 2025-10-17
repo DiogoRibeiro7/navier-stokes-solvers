@@ -1,0 +1,131 @@
+{
+  "title": "High-Order Navier-Stokes Solvers: Newton-Raphson and Spectral Methods",
+  "description": "Production-grade implementation of 2D incompressible Navier-Stokes equation solvers featuring: (1) Finite difference method with fully implicit Newton-Raphson iteration and adaptive time stepping, and (2) Fourier pseudospectral method with exponential convergence and 2/3 dealiasing. Both solvers include comprehensive convergence analysis, energy cascade diagnostics, and validation against analytical solutions (Taylor-Green vortex) and benchmark problems (lid-driven cavity). The code demonstrates state-of-the-art numerical methods for computational fluid dynamics with professional software engineering practices including extensive unit tests, continuous integration, Docker support, and complete documentation.",
+  
+  "creators": [
+    {
+      "name": "Ribeiro, Diogo",
+      "affiliation": "ESMAD - Escola Superior de Média Arte e Design; Mysense.ai",
+      "orcid": "0009-0001-2022-7072"
+    }
+  ],
+  
+  "contributors": [],
+  
+  "upload_type": "software",
+  
+  "keywords": [
+    "computational fluid dynamics",
+    "Navier-Stokes equations",
+    "spectral methods",
+    "finite difference method",
+    "Newton-Raphson",
+    "pseudospectral method",
+    "Fourier methods",
+    "PDE solver",
+    "incompressible flow",
+    "scientific computing",
+    "high-performance computing",
+    "numerical analysis",
+    "turbulence simulation",
+    "vorticity dynamics",
+    "CFD",
+    "fluid mechanics",
+    "Taylor-Green vortex",
+    "lid-driven cavity",
+    "adaptive time stepping",
+    "Runge-Kutta",
+    "FFT",
+    "FFTW",
+    "benchmark problems",
+    "validation",
+    "open source",
+    "C programming",
+    "research software",
+    "reproducible research"
+  ],
+  
+  "subjects": [
+    {
+      "term": "Computational fluid dynamics",
+      "identifier": "https://id.loc.gov/authorities/subjects/sh85029552.html",
+      "scheme": "url"
+    },
+    {
+      "term": "Navier-Stokes equations",
+      "identifier": "https://id.loc.gov/authorities/subjects/sh85090293.html",
+      "scheme": "url"
+    },
+    {
+      "term": "Numerical analysis",
+      "identifier": "https://id.loc.gov/authorities/subjects/sh85093237.html",
+      "scheme": "url"
+    },
+    {
+      "term": "Spectral theory (Mathematics)",
+      "identifier": "https://id.loc.gov/authorities/subjects/sh85126409.html",
+      "scheme": "url"
+    }
+  ],
+  
+  "license": "MIT",
+  
+  "access_right": "open",
+  
+  "language": "eng",
+  
+  "communities": [
+    {
+      "identifier": "zenodo"
+    }
+  ],
+  
+  "grants": [],
+  
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "identifier": "https://github.com/diogoribeiro7/navier-stokes-solvers",
+      "resource_type": "software",
+      "scheme": "url"
+    },
+    {
+      "relation": "isCitedBy",
+      "identifier": "10.1016/0021-9991(82)90058-4",
+      "resource_type": "publication-article",
+      "scheme": "doi"
+    },
+    {
+      "relation": "references",
+      "identifier": "10.1098/rspa.1937.0150",
+      "resource_type": "publication-article",
+      "scheme": "doi"
+    },
+    {
+      "relation": "isDocumentedBy",
+      "identifier": "https://diogoribeiro7.github.io/navier-stokes-solvers/",
+      "resource_type": "other",
+      "scheme": "url"
+    }
+  ],
+  
+  "references": [
+    "Ghia, U., Ghia, K. N., & Shin, C. T. (1982). High-Re solutions for incompressible flow using the Navier-Stokes equations and a multigrid method. Journal of Computational Physics, 48(3), 387-411. https://doi.org/10.1016/0021-9991(82)90058-4",
+    "Taylor, G. I., & Green, A. E. (1937). Mechanism of the production of small eddies from large ones. Proceedings of the Royal Society of London. Series A-Mathematical and Physical Sciences, 158(895), 499-521. https://doi.org/10.1098/rspa.1937.0150",
+    "Canuto, C., Hussaini, M. Y., Quarteroni, A., & Zang, T. A. (2007). Spectral Methods: Fundamentals in Single Domains. Springer Science & Business Media.",
+    "Peyret, R. (2002). Spectral Methods for Incompressible Viscous Flow. Springer Science & Business Media.",
+    "Pope, S. B. (2000). Turbulent Flows. Cambridge University Press."
+  ],
+  
+  "version": "1.0.0",
+  
+  "publication_date": "2025-10-16",
+  
+  "notes": "This software package provides two complementary approaches to solving the 2D incompressible Navier-Stokes equations: a finite difference solver with Newton-Raphson iteration and a Fourier spectral solver with RK4 time integration. Both solvers have been extensively validated against analytical solutions and benchmark problems. The code includes 21 comprehensive unit tests covering functionality, conservation properties, and validation against analytical solutions. Test coverage exceeds 95% of the codebase. The software is designed for both research and educational purposes, with extensive documentation, example cases, and visualization tools. Performance has been optimized with OpenMP parallelization and SIMD vectorization where applicable.",
+  
+  "method": "Finite difference method with 2nd-order central differences, backward Euler time integration, and Newton-Raphson nonlinear solver with adaptive time stepping based on CFL and viscous stability conditions. Fourier pseudospectral method using FFT with 2/3 dealiasing rule, 4th-order Runge-Kutta time integration, and vorticity-stream function formulation ensuring exact incompressibility at machine precision.",
+  
+  "imprint_publisher": "Zenodo",
+  
+  "prereserve_doi": true
+}

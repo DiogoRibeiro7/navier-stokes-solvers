@@ -1,0 +1,12 @@
+{
+  "grid": {
+    "nx": 192,
+    "ny": 96
+  },
+  "solver": {
+    "type": "finite_difference"
+  },
+  "time": {
+    "dt": 0.001
+  }
+}

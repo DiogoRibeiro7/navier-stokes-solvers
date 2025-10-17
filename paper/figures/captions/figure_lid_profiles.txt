@@ -1,0 +1,1 @@
+Figure 2. Vertical centreline velocity profiles for the lid-driven cavity benchmark at \Rey=1000. The spectral and finite difference solvers are compared against the reference data of Ghia et al. (1982), demonstrating excellent agreement along the entire wall-normal extent.
