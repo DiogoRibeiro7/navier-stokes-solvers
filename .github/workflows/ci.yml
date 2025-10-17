@@ -177,7 +177,7 @@ jobs:
           bin/ include/ src/ Makefile README.md LICENSE
     
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: navier-stokes-solvers-${{ github.ref_name }}.tar.gz
         generate_release_notes: true
