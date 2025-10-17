@@ -28,7 +28,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
@@ -80,7 +80,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     
     - name: Install dependencies
       run: |
@@ -104,7 +104,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     
     - name: Check README links
       uses: gaurav-nelson/github-action-markdown-link-check@v1
@@ -125,7 +125,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     
     - name: Set up Python
       uses: actions/setup-python@v6
@@ -159,7 +159,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     
     - name: Install dependencies
       run: |
