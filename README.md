@@ -2,8 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-latest-brightgreen.svg)](TESTING_DOCUMENTATION.md)
-[![CI](https://github.com/diogoribeiro7/navier-stokes-solvers/actions/workflows/test-and-document.yml/badge.svg)](https://github.com/diogoribeiro7/navier-stokes-solvers/actions/workflows/test-and-document.yml)
-[![Coverage](https://img.shields.io/badge/coverage-unknown-lightgrey.svg)](docs/test_badges.md)
+[![CI](https://img.shields.io/github/actions/workflow/status/diogoribeiro7/navier-stokes-solvers/test-and-document.yml?branch=main&label=CI)](https://github.com/diogoribeiro7/navier-stokes-solvers/actions/workflows/test-and-document.yml)
+[![Coverage](https://img.shields.io/badge/coverage-pending-lightgrey.svg)](docs/test_badges.md)
 [![Tests](https://img.shields.io/badge/tests-automated-blue.svg)](TESTING_DOCUMENTATION.md)
 
 High-order implementations of the two-dimensional incompressible Navier–Stokes equations featuring:

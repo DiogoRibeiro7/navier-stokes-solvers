@@ -1,0 +1,7 @@
+{
+  "ignorePatterns": [
+    {"pattern": "^/"},
+    {"pattern": "docs/test_badges.md"},
+    {"pattern": "TESTING_DOCUMENTATION.md"}
+  ]
+}
