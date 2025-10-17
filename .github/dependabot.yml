@@ -57,12 +57,4 @@ updates:
     # Ignore specific packages if needed
     ignore:
       - dependency-name: "numpy"
-        versions: [">=2.0.0"]  # Example: stay on numpy 1.x
-
-# Note: For C/C++ dependencies, Dependabot doesn't natively support them
-# However, if you add a package manager like Conan or vcpkg, you can add:
-#
-#  - package-ecosystem: "pip"  # For Conan
-#    directory: "/"
-#    schedule:
-#      interval: "weekly"
+        versions: [">=2.0.0"]  # Example: stay on numpy
