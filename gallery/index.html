@@ -1,0 +1,67 @@
+<p>A curated showcase of simulations produced with Navier-Stokes Solvers. Replace the placeholder SVGs under <code class="language-plaintext highlighter-rouge">docs/assets/images/</code> with high-resolution renders for production deployments.</p>
+
+<h2 id="lid-driven-cavity-re--1000">Lid-Driven Cavity (Re = 1000)</h2>
+
+<p><img src="../assets/images/gallery_lid_cavity.svg" alt="Lid-driven cavity" class="gallery-img" /></p>
+
+<ul>
+  <li><strong>Solver:</strong> Finite difference (Backward Euler + Newton-Raphson)</li>
+  <li><strong>Grid:</strong> $192 \times 192$</li>
+  <li><strong>Highlights:</strong> Secondary corner vortices, centreline velocity inflection.</li>
+  <li><strong>Reproduce:</strong>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./bin/ns_fd_solver <span class="nt">--re</span> 1000 <span class="nt">--nx</span> 192 <span class="nt">--ny</span> 192 <span class="nt">--steps</span> 8000 <span class="se">\</span>
+    <span class="nt">--output</span> results/fd_re1000.dat
+python scripts/plot_solution.py results/fd_re1000.dat <span class="nt">-o</span> figures/fd_re1000
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h2 id="taylor-green-vortex-decay">Taylor-Green Vortex Decay</h2>
+
+<p><img src="../assets/images/gallery_taylor_green.svg" alt="Taylor-Green vortex" class="gallery-img" /></p>
+
+<ul>
+  <li><strong>Solver:</strong> Spectral RK4, periodic domain $2\pi \times 2\pi$</li>
+  <li><strong>Grid:</strong> $256 \times 256$</li>
+  <li><strong>Highlights:</strong> Exponential kinetic energy decay vs analytic solution.</li>
+  <li><strong>Reproduce:</strong>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./bin/ns_spectral_solver <span class="nt">--config</span> configs/taylor_green.yml
+python scripts/energy_spectrum.py results/spectral_final_solution.dat <span class="se">\</span>
+    <span class="nt">-o</span> figures/taylor_green_spectrum.png
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h2 id="kelvinhelmholtz-shear-layer">Kelvin–Helmholtz Shear Layer</h2>
+
+<p><img src="../assets/images/gallery_shear_layer.svg" alt="Shear layer" class="gallery-img" /></p>
+
+<ul>
+  <li><strong>Solver:</strong> Spectral RK4 with 2/3 dealiasing</li>
+  <li><strong>Grid:</strong> $256 \times 256$</li>
+  <li><strong>Highlights:</strong> Vortex pairing and roll-up, enstrophy cascade.</li>
+  <li><strong>Reproduce:</strong>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./bin/ns_spectral_solver <span class="nt">--config</span> configs/shear_layer.yml
+python scripts/animate_flow.py <span class="s2">"results/shear_layer_step_*.dat"</span> <span class="se">\</span>
+    <span class="nt">-o</span> figures/shear_layer.gif <span class="nt">--fps</span> 24
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h2 id="forced-doubly-periodic-turbulence">Forced Doubly Periodic Turbulence</h2>
+
+<p><img src="../assets/images/gallery_turbulence.svg" alt="Forced turbulence" class="gallery-img" /></p>
+
+<ul>
+  <li><strong>Solver:</strong> Spectral with stochastic low-wavenumber forcing</li>
+  <li><strong>Grid:</strong> $256 \times 256$</li>
+  <li><strong>Highlights:</strong> $k^{-5/3}$ spectral slope, dual cascade dynamics.</li>
+  <li><strong>Reproduce:</strong>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./bin/ns_spectral_solver <span class="nt">--config</span> configs/turbulence_forced.yml
+python scripts/energy_spectrum.py results/spectral_final_solution.dat <span class="se">\</span>
+    <span class="nt">-o</span> figures/turbulence_spectrum.png
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>For additional validation figures and data tables see <a href="/benchmark-results/">Benchmark Results</a>.</p>

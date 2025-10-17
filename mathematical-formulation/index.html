@@ -1,0 +1,98 @@
+<h1 id="mathematical-formulation">Mathematical Formulation</h1>
+
+<blockquote>
+  <p>See also: <a href="/numerical-methods/">Numerical Methods</a> and <a href="/theory-background/">Theory Background</a>.</p>
+</blockquote>
+
+<h2 id="governing-equations">Governing Equations</h2>
+
+<p>We solve the incompressible Navier-Stokes equations in two space dimensions for velocity $\boldsymbol{u} = (u, v)$ and pressure $p$:</p>
+
+\[\begin{aligned}
+\frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} &amp;= -\frac{1}{\rho}\frac{\partial p}{\partial x} + \nu\left(\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2}\right), \\
+\frac{\partial v}{\partial t} + u\frac{\partial v}{\partial x} + v\frac{\partial v}{\partial y} &amp;= -\frac{1}{\rho}\frac{\partial p}{\partial y} + \nu\left(\frac{\partial^2 v}{\partial x^2} + \frac{\partial^2 v}{\partial y^2}\right), \\
+\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y} &amp;= 0.
+\end{aligned}
+\tag{1}\]
+
+<p>Here $\rho$ is the fluid density and $\nu$ the kinematic viscosity. Equation (1) matches the presentation in standard texts such as Panton (2013) and Ferziger &amp; Perić (2002).</p>
+
+<h2 id="stream-functionvorticity-formulation">Stream Function–Vorticity Formulation</h2>
+
+<p>For the spectral solver we adopt the vorticity $\omega$ and stream function $\psi$ variables:</p>
+
+\[\omega = \frac{\partial v}{\partial x} - \frac{\partial u}{\partial y}, \qquad \nabla^2 \psi = -\omega,
+\tag{2}\]
+
+<p>with velocity recoveries</p>
+
+\[u = \frac{\partial \psi}{\partial y}, \qquad v = -\frac{\partial \psi}{\partial x}. 
+\tag{3}\]
+
+<p>The transport equation for $\omega$ becomes</p>
+
+\[\frac{\partial \omega}{\partial t} + J(\psi, \omega) = \nu \nabla^2 \omega,
+\tag{4}\]
+
+<p>where $J(\psi, \omega) = \frac{\partial \psi}{\partial x} \frac{\partial \omega}{\partial y} - \frac{\partial \psi}{\partial y} \frac{\partial \omega}{\partial x}$ is the Jacobian. This formulation eliminates pressure and is particularly convenient for Fourier-based solvers (Boyd, 2001; Canuto et al., 2006).</p>
+
+<h2 id="non-dimensionalisation-and-reynolds-number">Non-dimensionalisation and Reynolds Number</h2>
+
+<p>We choose characteristic length $L$, velocity $U$, and define nondimensional variables:</p>
+
+\[\tilde{\boldsymbol{x}} = \frac{\boldsymbol{x}}{L}, \quad \tilde{t} = \frac{tU}{L}, \quad \tilde{\boldsymbol{u}} = \frac{\boldsymbol{u}}{U}, \quad \tilde{p} = \frac{p}{\rho U^2}.
+\tag{5}\]
+
+<p>Substituting (5) into (1) yields the dimensionless Navier-Stokes equations with a single parameter, the Reynolds number</p>
+
+\[\mathrm{Re} = \frac{UL}{\nu},
+\tag{6}\]
+
+<p>measuring the ratio of inertial to viscous forces. The nondimensional system is</p>
+
+\[\begin{aligned}
+\frac{\partial \tilde{\boldsymbol{u}}}{\partial \tilde{t}} + (\tilde{\boldsymbol{u}} \cdot \tilde{\nabla})\tilde{\boldsymbol{u}} &amp;= -\tilde{\nabla}\tilde{p} + \frac{1}{\mathrm{Re}} \tilde{\nabla}^2 \tilde{\boldsymbol{u}}, \\
+\tilde{\nabla} \cdot \tilde{\boldsymbol{u}} &amp;= 0.
+\end{aligned}
+\tag{7}\]
+
+<p>All discretisations in this project use the nondimensional variables.</p>
+
+<h2 id="boundary-conditions">Boundary Conditions</h2>
+
+<p>Multiple boundary-condition types are supported via <code class="language-plaintext highlighter-rouge">BoundaryCondition</code> enumerations:</p>
+
+<ul>
+  <li><strong>No-slip ($\boldsymbol{u}=0$):</strong> Used on solid walls in lid-driven cavities except for the moving lid.</li>
+  <li><strong>Moving lid:</strong> Imposes prescribed tangential velocity $u = U_{\text{lid}}$, $v = 0$.</li>
+  <li><strong>Neumann pressure:</strong> Zero normal pressure gradient $\partial p/\partial n = 0$ closes the pressure Poisson problem in FD runs.</li>
+  <li><strong>Periodic:</strong> Spectral simulations assume doubly-periodic domains, enforcing $\boldsymbol{u}(x+L,y) = \boldsymbol{u}(x,y)$ and similar in $y$.</li>
+  <li><strong>Free-slip and mixed options</strong> may be added by extending the boundary handling routines.</li>
+</ul>
+
+<p>Boundary operators must be applied consistently to velocity, vorticity, and stream function (see <a href="numerical_methods.md#finite-difference-discretization">Numerical Methods</a>).</p>
+
+<h2 id="initial-conditions">Initial Conditions</h2>
+
+<p>Typical initial fields include:</p>
+
+<ul>
+  <li><strong>Rest state:</strong> $\boldsymbol{u}=0$, $p=0$, used before spinning up lid-driven cavities.</li>
+  <li><strong>Taylor–Green vortex:</strong> Analytical velocity/vorticity given by
+\(u(x, y, 0) = \sin x\, \cos y, \quad v(x, y, 0) = -\cos x\, \sin y,\)
+\(\omega(x, y, 0) = 2 \cos x \cos y,\)
+scaled to desired wavelength and Reynolds number.</li>
+  <li><strong>Shear layer / vortex merger:</strong> Smooth hyperbolic tangent profiles with localized perturbations to trigger instability.</li>
+</ul>
+
+<p>The initialization routines in <code class="language-plaintext highlighter-rouge">fd_initialization.c</code> and <code class="language-plaintext highlighter-rouge">spectral_initialization.c</code> implement these states and call <code class="language-plaintext highlighter-rouge">ns_fd_apply_boundary_conditions</code> or spectral transforms as appropriate.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>Boyd, J. P. (2001). <em>Chebyshev and Fourier Spectral Methods</em>. Dover.</li>
+  <li>Canuto, C., Hussaini, M., Quarteroni, A., &amp; Zang, T. (2006). <em>Spectral Methods: Fundamentals in Single Domains</em>. Springer.</li>
+  <li>Ferziger, J. H., &amp; Perić, M. (2002). <em>Computational Methods for Fluid Dynamics</em>. Springer.</li>
+  <li>Panton, R. L. (2013). <em>Incompressible Flow</em> (4th ed.). Wiley.</li>
+  <li>Pope, S. B. (2000). <em>Turbulent Flows</em>. Cambridge University Press.</li>
+</ul>

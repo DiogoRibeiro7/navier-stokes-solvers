@@ -1,0 +1,107 @@
+<p>This guide walks through installing Navier-Stokes Solvers on Linux, macOS, and Windows (via WSL), as well as setting up a containerised workflow. Verify your environment with the steps at the end of this page.</p>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<ul>
+  <li>C compiler (GCC ≥ 10 or Clang ≥ 13)</li>
+  <li>Make</li>
+  <li>FFTW3 (double precision)</li>
+  <li>Python 3.9 or newer</li>
+  <li>Git</li>
+</ul>
+
+<p>Optional: CUDA toolkit (for future GPU extensions), Visual Studio Code for editing, and <code class="language-plaintext highlighter-rouge">gnuplot</code> or <code class="language-plaintext highlighter-rouge">paraview</code> for additional visualisation.</p>
+
+<h2 id="ubuntu--debian">Ubuntu / Debian</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt update
+<span class="nb">sudo </span>apt <span class="nb">install </span>build-essential git make python3 python3-venv python3-pip libfftw3-dev
+</code></pre></div></div>
+
+<ol>
+  <li>Clone the repository and build the solvers:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/your-org/navier-stokes-solvers.git
+<span class="nb">cd </span>navier-stokes-solvers
+make all
+</code></pre></div>    </div>
+  </li>
+  <li>Install Python utilities:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install</span> <span class="nt">-r</span> scripts/requirements.txt
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="macos-homebrew">macOS (Homebrew)</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/bin/bash <span class="nt">-c</span> <span class="s2">"</span><span class="si">$(</span>curl <span class="nt">-fsSL</span> https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh<span class="si">)</span><span class="s2">"</span>
+brew <span class="nb">install </span>gcc fftw python git
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>Note:</strong> On Apple Silicon, ensure Homebrew installs ARM64 versions (<code class="language-plaintext highlighter-rouge">/opt/homebrew</code>). Update your <code class="language-plaintext highlighter-rouge">PATH</code> accordingly.</p>
+</blockquote>
+
+<p>Build and verify:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/your-org/navier-stokes-solvers.git
+<span class="nb">cd </span>navier-stokes-solvers
+make spectral  <span class="c"># builds FFT-dependent solver</span>
+python3 <span class="nt">-m</span> pip <span class="nb">install</span> <span class="nt">-r</span> scripts/requirements.txt
+</code></pre></div></div>
+
+<h2 id="windows-wsl-2-recommended">Windows (WSL 2 Recommended)</h2>
+
+<ol>
+  <li>Enable Windows Subsystem for Linux and install Ubuntu from the Microsoft Store.</li>
+  <li>Launch WSL and follow the Ubuntu instructions above.</li>
+  <li>For native Windows builds use MSYS2/MinGW and install packages:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pacman <span class="nt">-S</span> <span class="nt">--needed</span> base-devel mingw-w64-x86_64-gcc mingw-w64-x86_64-fftw python
+</code></pre></div>    </div>
+    <p>Update <code class="language-plaintext highlighter-rouge">Makefile</code> variables <code class="language-plaintext highlighter-rouge">CC</code> and <code class="language-plaintext highlighter-rouge">PREFIX</code> if necessary.</p>
+  </li>
+</ol>
+
+<h2 id="docker-workflow">Docker Workflow</h2>
+
+<p>A reproducible Docker environment is provided.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/your-org/navier-stokes-solvers.git
+<span class="nb">cd </span>navier-stokes-solvers
+<span class="c"># Build image</span>
+docker build <span class="nt">-t</span> navier-stokes-solvers <span class="nb">.</span>
+<span class="c"># Run container mounting local results</span>
+docker run <span class="nt">--rm</span> <span class="nt">-it</span> <span class="nt">-v</span> <span class="si">$(</span><span class="nb">pwd</span><span class="si">)</span>/results:/workspace/results navier-stokes-solvers ./bin/ns_fd_solver
+</code></pre></div></div>
+
+<p>Docker Compose includes service definitions for FD and spectral solvers; run <code class="language-plaintext highlighter-rouge">docker-compose up fd-solver</code> to start.</p>
+
+<h2 id="python-environment-optional-but-recommended">Python Environment (Optional but recommended)</h2>
+
+<p>Use a virtual environment to keep dependencies isolated:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python3 <span class="nt">-m</span> venv .venv
+<span class="nb">source</span> .venv/bin/activate  <span class="c"># Windows: .venv\Scriptsctivate</span>
+pip <span class="nb">install</span> <span class="nt">--upgrade</span> pip
+pip <span class="nb">install</span> <span class="nt">-r</span> scripts/requirements.txt
+</code></pre></div></div>
+
+<h2 id="verification-checklist">Verification Checklist</h2>
+
+<ol>
+  <li><strong>Build succeeds:</strong> <code class="language-plaintext highlighter-rouge">make all</code> completes without errors.</li>
+  <li><strong>Run smoke tests:</strong>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./bin/ns_fd_solver <span class="nt">--help</span> <span class="o">||</span> ./bin/ns_fd_solver
+./bin/ns_spectral_solver <span class="nt">--help</span> <span class="o">||</span> ./bin/ns_spectral_solver
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Python tooling:</strong>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python <span class="nt">-m</span> compileall scripts
+python scripts/plot_solution.py <span class="nt">--help</span>
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Post-processing:</strong> generate a figure from bundled sample data to confirm Matplotlib is functional:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python scripts/plot_solution.py tests/data/fd_sample.dat <span class="nt">-o</span> figures/quick_check
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>If any step fails, consult the <a href="/faq/">FAQ</a> or open an issue with platform details and logs.</p>

@@ -1,0 +1,145 @@
+<h1 id="numerical-methods">Numerical Methods</h1>
+
+<blockquote>
+  <p>Complementary reading: <a href="mathematical_formulation.md">Mathematical Formulation</a> and <a href="/theory-background/">Theory Background</a>.</p>
+</blockquote>
+
+<h2 id="finite-difference-discretization">Finite-Difference Discretization</h2>
+
+<h3 id="spatial-operators">Spatial Operators</h3>
+
+<p>We employ second-order centered differences on a uniform Cartesian grid $(x_i, y_j)$ with spacings $\Delta x, \Delta y$:</p>
+
+\[\left.\frac{\partial u}{\partial x}\right|_{i,j} \approx \frac{u_{i+1,j} - u_{i-1,j}}{2\Delta x}, \qquad
+\left.\frac{\partial^2 u}{\partial x^2}\right|_{i,j} \approx \frac{u_{i+1,j} - 2u_{i,j} + u_{i-1,j}}{\Delta x^2}.
+\tag{1}\]
+
+<p>Figure reference: see <code class="language-plaintext highlighter-rouge">docs/images/stencil_illustration.txt</code>.</p>
+
+<h3 id="temporal-discretization-backward-euler">Temporal Discretization (Backward Euler)</h3>
+
+<p>The semi-discrete momentum equations are advanced implicitly via backward Euler:</p>
+
+\[\frac{\boldsymbol{u}^{n+1} - \boldsymbol{u}^n}{\Delta t} + \mathcal{N}(\boldsymbol{u}^{n+1}) = -\nabla p^{n+1} + \frac{1}{\mathrm{Re}} \nabla^2 \boldsymbol{u}^{n+1},
+\tag{2}\]
+
+<p>where $\mathcal{N}$ denotes the nonlinear advection terms. The residual is solved by Newton-Raphson.</p>
+
+<h3 id="newton-raphson-linearisation">Newton-Raphson Linearisation</h3>
+
+<p>Given an iterate $\boldsymbol{u}^{(k)}$, the correction $\delta \boldsymbol{u}$ solves</p>
+
+\[\mathbf{J}(\boldsymbol{u}^{(k)})\, \delta \boldsymbol{u} = -\mathbf{R}(\boldsymbol{u}^{(k)}),
+\tag{3}\]
+
+<p>with sparse Jacobian $\mathbf{J}$ assembled in compressed-row format (<code class="language-plaintext highlighter-rouge">J</code>, <code class="language-plaintext highlighter-rouge">ia</code>, <code class="language-plaintext highlighter-rouge">ja</code>). The Newton iteration terminates when $|\mathbf{R}|_\infty &lt; 10^{-8}$ or after <code class="language-plaintext highlighter-rouge">MAX_ITER</code> steps.</p>
+
+<p><strong>Pseudocode:</strong></p>
+
+<pre><code class="language-pseudo">function advance_fd_step(state):
+    copy_previous_state(state)
+    state.dt = adaptive_timestep(state)
+    for k in 0 .. MAX_ITER:
+        residual = assemble_residual(state)
+        if norm_inf(residual) &lt; tol:
+            return SUCCESS
+        jacobian = assemble_jacobian(state)
+        delta = solve_sparse_system(jacobian, residual)
+        update_state(state, delta)
+    return MAX_ITER_REACHED
+</code></pre>
+
+<p>Sparse linear systems are solved with a bi-conjugate gradient stabilized (BiCGSTAB) routine; see Ferziger &amp; Perić (2002) for similar strategies.</p>
+
+<h2 id="spectral-fourier-methods">Spectral (Fourier) Methods</h2>
+
+<h3 id="basis-and-transforms">Basis and Transforms</h3>
+
+<p>Spectral simulations assume periodic domains and expand vorticity in Fourier modes:</p>
+
+\[\omega(x,y,t) = \sum_{k_x=-N_x/2}^{N_x/2} \sum_{k_y=-N_y/2}^{N_y/2} \hat{\omega}_{k_x,k_y}(t) e^{i(k_x x + k_y y)}.
+\tag{4}\]
+
+<p>Fast Fourier Transforms (FFTs) and their inverses are executed via FFTW3 plans (<code class="language-plaintext highlighter-rouge">fftw_plan_dft_r2c_2d</code>, <code class="language-plaintext highlighter-rouge">fftw_plan_dft_c2r_2d</code>). Reference: Frigo &amp; Johnson (2005).</p>
+
+<h3 id="pseudospectral-evaluation">Pseudospectral Evaluation</h3>
+
+<p>Nonlinear products are computed in physical space to avoid expensive convolutions:</p>
+
+<ol>
+  <li>Transform $\omega^n$ to spectral space.</li>
+  <li>Recover velocity via $\hat{\psi} = -\hat{\omega}/k^2$ and (3).</li>
+  <li>Transform back to physical space to form Jacobian $J(\psi,\omega)$.</li>
+  <li>Transform the product to spectral space for time integration.</li>
+</ol>
+
+<table>
+  <tbody>
+    <tr>
+      <td>The 2/3 dealiasing rule zeroes modal coefficients with $</td>
+      <td>k</td>
+      <td>&gt; 2N/3$ to suppress aliasing (Orszag, 1971). See placeholder diagram <code class="language-plaintext highlighter-rouge">docs/images/spectral_basis_functions.txt</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="spectral-poisson-solver">Spectral Poisson Solver</h3>
+
+<p>In Fourier space the Poisson problem reduces to algebraic inversion:</p>
+
+\[\hat{\psi}_{k_x,k_y} = -\frac{\hat{\omega}_{k_x,k_y}}{k_x^2 + k_y^2},
+\tag{5}\]
+
+<p>with zero mean mode handled separately ($\hat{\psi}_{0,0} = 0$).</p>
+
+<h2 id="time-integration">Time Integration</h2>
+
+<h3 id="fourth-order-rungekutta-rk4">Fourth-Order Runge–Kutta (RK4)</h3>
+
+<p>For vorticity transport we use classical RK4:</p>
+
+<pre><code class="language-pseudo">function rk4_step(omega, dt):
+    k1 = rhs(omega)
+    k2 = rhs(omega + 0.5 * dt * k1)
+    k3 = rhs(omega + 0.5 * dt * k2)
+    k4 = rhs(omega + dt * k3)
+    return omega + dt/6 * (k1 + 2*k2 + 2*k3 + k4)
+</code></pre>
+
+<p>Derivation follows Butcher (2008). The <code class="language-plaintext highlighter-rouge">rhs</code> operator internally performs FFTs and diffusion terms.</p>
+
+<h3 id="adaptive-timestep-control">Adaptive Timestep Control</h3>
+
+<p>Both solvers estimate the permissible timestep using a CFL-like condition:</p>
+
+\[\Delta t = \mathrm{CFL}\times \min\left(\frac{\Delta x}{|u|_{\max}+\epsilon}, \frac{\Delta y}{|v|_{\max}+\epsilon}\right).
+\tag{6}\]
+
+<p>Viscous constraints and global bounds (<code class="language-plaintext highlighter-rouge">MIN_DT</code>, <code class="language-plaintext highlighter-rouge">MAX_DT</code>) further limit $\Delta t$ (see <code class="language-plaintext highlighter-rouge">ns_fd_adaptive_timestep</code> and <code class="language-plaintext highlighter-rouge">ns_spectral_compute_cfl_timestep</code>).</p>
+
+<h3 id="stability-considerations">Stability Considerations</h3>
+
+<ul>
+  <li><strong>FD backward Euler</strong> is A-stable, so stiffness from viscous terms is handled implicitly, but Newton linearisation must remain convergent; a good initial guess from the previous time level is essential.</li>
+  <li><strong>Spectral RK4</strong> is conditionally stable; the CFL factor 0.3 used in <code class="language-plaintext highlighter-rouge">spectral_memory.c</code> keeps the advective Courant number below 1.</li>
+</ul>
+
+<table>
+  <tbody>
+    <tr>
+      <td>Von Neumann analysis for linearised advection-diffusion suggests stability if $\Delta t \le 2/(</td>
+      <td>\boldsymbol{u}</td>
+      <td>k + \nu k^2)$, consistent with (6).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>Butcher, J. C. (2008). <em>Numerical Methods for Ordinary Differential Equations</em> (2nd ed.). Wiley.</li>
+  <li>Canuto, C., Hussaini, M., Quarteroni, A., &amp; Zang, T. (2006). <em>Spectral Methods: Fundamentals in Single Domains</em>. Springer.</li>
+  <li>Ferziger, J. H., &amp; Perić, M. (2002). <em>Computational Methods for Fluid Dynamics</em>. Springer.</li>
+  <li>Frigo, M., &amp; Johnson, S. G. (2005). The design and implementation of FFTW3. <em>Proceedings of the IEEE</em>, 93(2), 216–231.</li>
+  <li>Orszag, S. A. (1971). On the elimination of aliasing in finite-difference schemes by filtering high-wavenumber components. <em>J. Atmos. Sci.</em>, 28, 1074–1074.</li>
+</ul>

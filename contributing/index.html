@@ -1,0 +1,85 @@
+<h1 id="contributing-guide">Contributing Guide</h1>
+
+<p>We welcome pull requests that improve the solvers, add physics models, or expand documentation. Please read this guide before submitting changes.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<ol>
+  <li>Fork the repository on GitHub.</li>
+  <li>Clone your fork:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/&lt;your-username&gt;/navier-stokes-solvers.git
+<span class="nb">cd </span>navier-stokes-solvers
+</code></pre></div>    </div>
+  </li>
+  <li>Configure Git remotes:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git remote add upstream https://github.com/original/navier-stokes-solvers.git
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="branching-and-workflow">Branching and Workflow</h2>
+
+<ul>
+  <li>Create feature branches from <code class="language-plaintext highlighter-rouge">main</code>:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git checkout <span class="nt">-b</span> feature/my-improvement
+</code></pre></div>    </div>
+  </li>
+  <li>Keep branches focused; one logical change per pull request.</li>
+  <li>Rebase on top of <code class="language-plaintext highlighter-rouge">main</code> before opening a PR:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git fetch upstream
+git rebase upstream/main
+</code></pre></div>    </div>
+  </li>
+  <li>Use descriptive commit messages (imperative mood).</li>
+</ul>
+
+<h2 id="coding-standards">Coding Standards</h2>
+
+<ul>
+  <li><strong>C code:</strong> follow <code class="language-plaintext highlighter-rouge">clang-format</code> defaults with 4-space indentation, limit lines to 100 characters, and keep header guards consistent with existing style.</li>
+  <li><strong>Python scripts:</strong> conform to PEP 8. Run <code class="language-plaintext highlighter-rouge">black</code> (see <code class="language-plaintext highlighter-rouge">scripts/requirements.txt</code>) before committing.</li>
+  <li><strong>Documentation:</strong> Markdown with GitHub-flavoured extensions; cross-link related pages (see <a href="/usage-guide/">docs/index</a>).</li>
+</ul>
+
+<p>Refer to <code class="language-plaintext highlighter-rouge">include/common_types.h</code> for naming conventions (snake_case for functions, PascalCase for structs).</p>
+
+<h2 id="adding-new-features">Adding New Features</h2>
+
+<ol>
+  <li><strong>Plan:</strong> open a GitHub issue describing the feature and design approach.</li>
+  <li><strong>Implement:</strong> extend the solver modules or add new ones under <code class="language-plaintext highlighter-rouge">src/</code>.</li>
+  <li><strong>Test:</strong> add regression tests in <code class="language-plaintext highlighter-rouge">tests/</code> and update <code class="language-plaintext highlighter-rouge">tests/Makefile</code> if new binaries are required.</li>
+  <li><strong>Document:</strong> update relevant Markdown files (e.g., <a href="/usage-guide/">Usage Guide</a>, <a href="/api-reference/">API Reference</a>).</li>
+  <li><strong>Submit PR:</strong> link to the original issue, summarise changes, and note any follow-up work.</li>
+</ol>
+
+<h2 id="testing-requirements">Testing Requirements</h2>
+
+<ul>
+  <li>Run <code class="language-plaintext highlighter-rouge">make test</code> (or the relevant subset) before submission; attach output in the PR.</li>
+  <li>For numerical features, include verification scripts or benchmark comparisons (see <a href="/benchmark-results/">Benchmark Results</a>).</li>
+  <li>Ensure new scripts are covered by basic smoke tests (e.g., <code class="language-plaintext highlighter-rouge">python -m compileall</code>).</li>
+</ul>
+
+<h2 id="documentation-standards">Documentation Standards</h2>
+
+<ul>
+  <li>Every new feature must be described in the usage or theory docs.</li>
+  <li>Add figures to <code class="language-plaintext highlighter-rouge">docs/images/</code> and reference them with <code class="language-plaintext highlighter-rouge">![caption](images/&lt;file&gt;.png)</code>.</li>
+  <li>Keep language concise and accessible to graduate-level readers.</li>
+</ul>
+
+<h2 id="code-review-checklist">Code Review Checklist</h2>
+
+<p>Before requesting review ensure:</p>
+
+<ul class="task-list">
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />All tests pass locally.</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Linting/formatting applied.</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Documentation updated.</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />No unrelated changes in the diff.</li>
+</ul>
+
+<h2 id="contact">Contact</h2>
+
+<p>For major design discussions open a GitHub discussion or email the maintainers listed in <code class="language-plaintext highlighter-rouge">README.md</code>. We aim to respond to PRs within five working days.</p>

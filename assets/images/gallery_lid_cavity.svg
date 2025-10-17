@@ -1,0 +1,13 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 360' role='img' aria-labelledby='gallery_lid_cavity_title gallery_lid_cavity_desc'>
+  <title id='gallery_lid_cavity_title'>Lid-Driven Cavity</title>
+  <desc id='gallery_lid_cavity_desc'>Secondary eddies in lid-driven cavity</desc>
+  <defs>
+    <linearGradient id='gallery_lid_cavity_gradient' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#1b3b6f' stop-opacity='0.85'/>
+      <stop offset='100%' stop-color='#3282b8' stop-opacity='0.85'/>
+    </linearGradient>
+  </defs>
+  <rect width='600' height='360' fill='url(#gallery_lid_cavity_gradient)' rx='18'/>
+  <text x='50%' y='52%' text-anchor='middle' font-family="'Segoe UI',sans-serif" font-size='32' fill='#ffffff' opacity='0.95'>Lid-Driven Cavity</text>
+  <text x='50%' y='72%' text-anchor='middle' font-family="'Segoe UI',sans-serif" font-size='18' fill='#f0f4ff' opacity='0.85'>Re = 1000 | FD</text>
+</svg>

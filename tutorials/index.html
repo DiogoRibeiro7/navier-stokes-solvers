@@ -1,0 +1,83 @@
+<p>Hands-on tutorials guide you from first run to rigorous validation. Supplementary notebooks and datasets live in the <code class="language-plaintext highlighter-rouge">tutorials/</code> folder (planned). Video walk-throughs reference placeholder clips under <code class="language-plaintext highlighter-rouge">docs/assets/videos/</code> for future uploads.</p>
+
+<h2 id="tutorial-1-your-first-simulation">Tutorial 1: Your First Simulation</h2>
+
+<p><strong>Objective:</strong> Run the finite-difference lid-driven cavity and visualise velocity profiles.</p>
+
+<ol>
+  <li>Build the solver: <code class="language-plaintext highlighter-rouge">make fd</code></li>
+  <li>Execute a short run:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./bin/ns_fd_solver <span class="nt">--steps</span> 500 <span class="nt">--output</span> results/fd_quickstart.dat
+</code></pre></div>    </div>
+  </li>
+  <li>Plot velocity magnitude and streamlines:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python scripts/plot_solution.py results/fd_quickstart.dat <span class="se">\</span>
+    <span class="nt">--output-prefix</span> figures/fd_quickstart
+</code></pre></div>    </div>
+  </li>
+  <li>Compare centreline profiles with literature using <code class="language-plaintext highlighter-rouge">scripts/compare_methods.py</code>.</li>
+</ol>
+
+<div class="video-callout">
+  <span>Video:</span> <em>Coming soon – quickstart overview (placeholder).</em>
+</div>
+
+<h2 id="tutorial-2-understanding-results">Tutorial 2: Understanding Results</h2>
+
+<p><strong>Objective:</strong> Interpret solver diagnostics, energy budgets, and convergence.</p>
+
+<ul>
+  <li>Inspect <code class="language-plaintext highlighter-rouge">SolverStats</code> printed every 10 steps (<code class="language-plaintext highlighter-rouge">energy</code>, <code class="language-plaintext highlighter-rouge">residual</code>).</li>
+  <li>Enable verbose logging by setting <code class="language-plaintext highlighter-rouge">VERBOSE=1</code> in the Makefile and rebuilding.</li>
+  <li>Plot vorticity isolines and surface visualisations:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python scripts/plot_solution.py results/fd_final_solution.dat <span class="se">\</span>
+    <span class="nt">--vorticity-colormap</span> coolwarm <span class="nt">--surface-view</span> 35 <span class="nt">-60</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Read <a href="/usage-guide/">Usage Guide</a> for file format details.</li>
+</ul>
+
+<h2 id="tutorial-3-parameter-studies">Tutorial 3: Parameter Studies</h2>
+
+<p><strong>Objective:</strong> Automate Reynolds number sweeps and analyse convergence.</p>
+
+<ol>
+  <li>Use the spectral driver for Taylor–Green vortex:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./bin/ns_spectral_solver <span class="nt">--config</span> configs/taylor_green_128.yml
+</code></pre></div>    </div>
+  </li>
+  <li>Automate sweeps via <code class="language-plaintext highlighter-rouge">scripts/convergence_study.py</code>:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python scripts/convergence_study.py <span class="nt">--resolutions</span> 64 96 128 192 <span class="se">\</span>
+    <span class="nt">--fd-results-pattern</span> <span class="s2">"results/fd_re100_{nx:03d}.dat"</span> <span class="se">\</span>
+    <span class="nt">--output-dir</span> studies/re100
+</code></pre></div>    </div>
+  </li>
+  <li>Generate convergence plots and tables under <code class="language-plaintext highlighter-rouge">studies/re100</code>.</li>
+  <li>Capture summary figures for documentation (add to <a href="/gallery/">Gallery</a>).</li>
+</ol>
+
+<h2 id="tutorial-4-validation-workflow">Tutorial 4: Validation Workflow</h2>
+
+<p><strong>Objective:</strong> Reproduce benchmark tables against Ghia et al. and spectral references.</p>
+
+<ul>
+  <li>Run the high-resolution cavity example (<code class="language-plaintext highlighter-rouge">examples/lid_driven_cavity_re1000.c</code>).</li>
+  <li>Export centreline comparisons:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python scripts/compare_methods.py results/fd_final_solution.dat <span class="se">\</span>
+    results/spectral_final_solution.dat <span class="nt">-o</span> figures/fd_vs_spec
+</code></pre></div>    </div>
+  </li>
+  <li>Populate entries in <a href="/benchmark-results/">Benchmark Results</a>.</li>
+  <li>Submit your findings via a pull request following the <a href="/contributing/">Contributing Guide</a>.</li>
+</ul>
+
+<div class="video-callout">
+  <span>Video:</span> <em>Validation deep dive (placeholder link).</em>
+</div>
+
+<h2 id="additional-resources">Additional Resources</h2>
+
+<ul>
+  <li><strong>Notebook templates:</strong> (coming soon) interactive parameter sweeps.</li>
+  <li><strong>Community sessions:</strong> Monthly office hours announced on the project wiki.</li>
+</ul>

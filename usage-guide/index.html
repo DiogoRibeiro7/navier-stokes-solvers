@@ -1,0 +1,177 @@
+<h1 id="usage-guide">Usage Guide</h1>
+
+<blockquote>
+  <p>New to the codebase? Skim <a href="/theory-background/">Theory Background</a> and <a href="/numerical-methods/">Numerical Methods</a> for context before diving in.</p>
+</blockquote>
+
+<h2 id="5-minute-quick-start">5-Minute Quick Start</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Clone and enter the project directory</span>
+git clone https://github.com/your-org/navier-stokes-solvers.git
+<span class="nb">cd </span>navier-stokes-solvers
+
+<span class="c"># 2. Build both solvers (requires gcc/clang, FFTW3)</span>
+make all
+
+<span class="c"># 3. Run the finite-difference lid-driven cavity</span>
+./bin/ns_fd_solver
+
+<span class="c"># 4. Visualise the result</span>
+python scripts/plot_solution.py results/fd_final_solution.dat <span class="nt">-o</span> figures/fd_run
+</code></pre></div></div>
+
+<p>Expected outputs are written under <code class="language-plaintext highlighter-rouge">results/</code>. For a richer demo, see <code class="language-plaintext highlighter-rouge">examples/</code> once populated.</p>
+
+<h2 id="first-simulation-step-by-step">First Simulation (Step-by-Step)</h2>
+
+<ol>
+  <li><strong>Configure parameters</strong> in <code class="language-plaintext highlighter-rouge">src/finite_difference/main_fd.c</code> (grid size, Reynolds number, final time).</li>
+  <li><strong>Build the solver:</strong> <code class="language-plaintext highlighter-rouge">make fd</code>.</li>
+  <li><strong>Execute:</strong> <code class="language-plaintext highlighter-rouge">./bin/ns_fd_solver &gt; logs/fd_run.txt 2&gt;&amp;1</code>.</li>
+  <li><strong>Check diagnostics:</strong> inspect residual history printed every 10 steps.</li>
+  <li><strong>Plot key fields:</strong>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python scripts/plot_solution.py results/fd_final_solution.dat <span class="se">\</span>
+    <span class="nt">--output-prefix</span> figures/fd_final <span class="nt">--contour-levels</span> 40
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Compare methods:</strong>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python scripts/compare_methods.py results/fd_final_solution.dat <span class="se">\</span>
+    results/spectral_final_solution.dat <span class="nt">-o</span> figures/fd_vs_spec
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>Cross-link: deeper details in <a href="/benchmark-results/">Benchmark Results</a>.</p>
+
+<h2 id="parameter-selection-guidelines">Parameter Selection Guidelines</h2>
+
+<ul>
+  <li><strong>Grid resolution:</strong> start with $64 \times 64$ for laminar runs; increase to $192 \times 192$ or more for $\mathrm{Re} \ge 1000$.</li>
+  <li><strong>Time step limits:</strong> rely on adaptive controllers; tighten <code class="language-plaintext highlighter-rouge">MAX_DT</code> for highly unsteady flows.</li>
+  <li><strong>Spectral runs:</strong> maintain square grids with powers of two for FFT efficiency.</li>
+  <li><strong>Physical scaling:</strong> ensure nondimensional variables map to realistic physical units if comparing experiments (see <a href="mathematical_formulation.md#non-dimensionalisation-and-reynolds-number">Mathematical Formulation</a>).</li>
+</ul>
+
+<h2 id="understanding-output-files">Understanding Output Files</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">results/fd_final_solution.dat</code></td>
+      <td>Space-delimited table <code class="language-plaintext highlighter-rouge">x y u v [omega] [p]</code> depending on solver</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">results/spectral_solution_step_XXXX.dat</code></td>
+      <td>Snapshot at RK4 substep <code class="language-plaintext highlighter-rouge">XXXX</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">results/taylor_green_errors.dat</code></td>
+      <td>Time series of L2/Linf errors</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">figures/*</code></td>
+      <td>PNG figures produced by plotting scripts</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Metadata is embedded via header comments (<code class="language-plaintext highlighter-rouge"># key: value</code>). Use <code class="language-plaintext highlighter-rouge">head -n 5 file.dat</code> to preview.</p>
+
+<h2 id="visualisation-workflow">Visualisation Workflow</h2>
+
+<ol>
+  <li><strong>Static plots:</strong> <code class="language-plaintext highlighter-rouge">scripts/plot_solution.py</code> (contours, surface plots, vorticity isolines).</li>
+  <li><strong>Animations:</strong>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python scripts/animate_flow.py <span class="s2">"results/spectral_step_*.dat"</span> <span class="se">\</span>
+    <span class="nt">-o</span> figures/flow.mp4 <span class="nt">--fps</span> 30 <span class="nt">--particle-count</span> 200
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Comparisons:</strong> leverage <code class="language-plaintext highlighter-rouge">scripts/compare_methods.py</code> for FD vs spectral metrics.</li>
+  <li><strong>Spectral energy:</strong> <code class="language-plaintext highlighter-rouge">python scripts/energy_spectrum.py results/spectral_final_solution.dat</code>.</li>
+</ol>
+
+<p>Suggested image placeholders live under <code class="language-plaintext highlighter-rouge">docs/images/</code> so you can drop high-resolution renders for documentation.</p>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Symptom</th>
+      <th>Likely Cause</th>
+      <th>Fix</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Solver diverges (<code class="language-plaintext highlighter-rouge">SOLVER_DIVERGED</code>)</td>
+      <td>Reynolds number too high for given grid</td>
+      <td>Refine grid, reduce <code class="language-plaintext highlighter-rouge">MAX_DT</code>, or switch to spectral solver</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">fftw_plan</code> failure</td>
+      <td>FFTW missing or misconfigured</td>
+      <td>Install FFTW3, re-run <code class="language-plaintext highlighter-rouge">make clean &amp;&amp; make spectral</code></td>
+    </tr>
+    <tr>
+      <td>Segmentation fault on start</td>
+      <td>Grid sizes not initialized</td>
+      <td>Check <code class="language-plaintext highlighter-rouge">ns_fd_allocate</code> return value; ensure memory succeeds</td>
+    </tr>
+    <tr>
+      <td>Flat velocity field</td>
+      <td>Forgot to set lid speed or initial condition</td>
+      <td>Revisit initialization routine</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>More FAQs in <a href="/faq/">docs/faq.md</a>.</p>
+
+<h2 id="performance-optimisation">Performance Optimisation</h2>
+
+<ul>
+  <li><strong>Compiler flags:</strong> enable <code class="language-plaintext highlighter-rouge">-O3 -march=native</code> (edit <code class="language-plaintext highlighter-rouge">Makefile</code>).</li>
+  <li><strong>Threaded FFTs:</strong> configure FFTW with <code class="language-plaintext highlighter-rouge">--enable-openmp</code> and set <code class="language-plaintext highlighter-rouge">FFTW_NUM_THREADS</code>.</li>
+  <li><strong>Batch snapshots:</strong> lower <code class="language-plaintext highlighter-rouge">output_interval</code> to reduce I/O.</li>
+  <li><strong>Matrix reuse:</strong> for steady FD problems, reuse Jacobian structure to warm-start iterative solvers.</li>
+</ul>
+
+<h2 id="memory-estimates">Memory Estimates</h2>
+
+<p>For structured grids memory scales as $\mathcal{O}(N_x N_y)$. Approximate usage:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Grid</th>
+      <th>FD (MiB)</th>
+      <th>Spectral (MiB)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>$64^2$</td>
+      <td>~5</td>
+      <td>~12</td>
+    </tr>
+    <tr>
+      <td>$128^2$</td>
+      <td>~20</td>
+      <td>~42</td>
+    </tr>
+    <tr>
+      <td>$256^2$</td>
+      <td>~80</td>
+      <td>~160</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Estimates assume double precision arrays and FFT workspaces; adjust for additional diagnostics. Use <code class="language-plaintext highlighter-rouge">htop</code> or <code class="language-plaintext highlighter-rouge">Get-Process</code> to monitor consumption during runs.</p>

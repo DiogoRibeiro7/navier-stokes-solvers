@@ -1,0 +1,81 @@
+<h1 id="theory-background">Theory Background</h1>
+
+<p>This primer targets advanced undergraduate students seeking intuition for the phenomena simulated by the code. For derivations consult <a href="mathematical_formulation.md">Mathematical Formulation</a>.</p>
+
+<h2 id="fluid-dynamics-essentials">Fluid Dynamics Essentials</h2>
+
+<ul>
+  <li><strong>Continuum assumption:</strong> Fluids are modelled as continuous media when molecular mean free paths are much smaller than the domain size.</li>
+  <li><strong>Mass conservation:</strong> Enforced through the incompressibility constraint $\nabla \cdot \boldsymbol{u} = 0$.</li>
+  <li><strong>Momentum balance:</strong> Newton’s second law applied to a fluid element yields the Navier–Stokes equations.</li>
+</ul>
+
+<p>ASCII schematic of a control volume:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+-----------+
+|           |  u(x+dx,y)
+|   CV      |&lt;-----------
+|           |
++-----------+
+^           ^
+u(x,y)    
+</code></pre></div></div>
+
+<p>See <code class="language-plaintext highlighter-rouge">docs/images/grid_structure_diagram.txt</code> for an illustration slot.</p>
+
+<h2 id="reynolds-number">Reynolds Number</h2>
+
+<p>The Reynolds number $\mathrm{Re} = UL/\nu$ compares inertial and viscous effects. Flow regimes:</p>
+
+<ul>
+  <li>$\mathrm{Re} \lesssim 10^2$: laminar, viscous forces dominate.</li>
+  <li>$\mathrm{Re} \sim 10^3$–$10^4$: transition and coherent vortices appear (e.g., lid-driven cavity at 1000).</li>
+  <li>$\mathrm{Re} \gg 10^4$: turbulence with wide range of scales.</li>
+</ul>
+
+<h2 id="vorticity-dynamics">Vorticity Dynamics</h2>
+
+<p>Vorticity $\omega = \nabla \times \boldsymbol{u}$ measures local rotation. In 2D incompressible flow the vorticity equation simplifies to</p>
+
+\[\frac{\partial \omega}{\partial t} + \boldsymbol{u}\cdot\nabla \omega = \nu \nabla^2 \omega.
+\tag{1}\]
+
+<p>Key processes:</p>
+
+<ul>
+  <li><strong>Advection:</strong> Vorticity is transported by the flow.</li>
+  <li><strong>Diffusion:</strong> Viscosity smooths gradients.</li>
+  <li><strong>Boundary generation:</strong> No-slip walls create vorticity layers that diffuse into the interior.</li>
+</ul>
+
+<p>Figure placeholder: <code class="language-plaintext highlighter-rouge">docs/images/example_velocity_fields.txt</code> (add contour plots of $\omega$).</p>
+
+<h2 id="turbulence-basics">Turbulence Basics</h2>
+
+<ul>
+  <li><strong>Energy cascade:</strong> In 3D turbulence energy flows from large to small scales; in 2D, enstrophy cascades to small scales while energy moves to large scales (Kraichnan, 1967).</li>
+  <li><strong>Kolmogorov spectrum:</strong> $E(k) \sim k^{-5/3}$ in inertial range. Spectral solver diagnostics (see <a href="benchmark_results.md#spectral-energy-spectra">Benchmark Results</a>) reproduce this slope when adequately resolved.</li>
+  <li><strong>Coherent structures:</strong> Kelvin–Helmholtz rollers, Taylor–Green vortices, and lid-driven corner eddies are examples simulated here.</li>
+</ul>
+
+<h2 id="energy-cascades">Energy Cascades</h2>
+
+<p>A qualitative depiction of the dual cascade in 2D:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Large eddies --&gt; (inverse cascade) --&gt; Larger coherent structures
+          |
+          +--&gt; (forward enstrophy cascade) --&gt; Small-scale vorticity filaments
+</code></pre></div></div>
+
+<p>Spectral energy spectra stored in <code class="language-plaintext highlighter-rouge">docs/images/spectral_basis_functions.txt</code> should visualise these trends.</p>
+
+<h2 id="suggested-reading">Suggested Reading</h2>
+
+<ul>
+  <li>White, F. M. (2006). <em>Viscous Fluid Flow</em> (3rd ed.). McGraw-Hill.</li>
+  <li>Pope, S. B. (2000). <em>Turbulent Flows</em>. Cambridge University Press.</li>
+  <li>Davidson, P. A. (2015). <em>Turbulence: An Introduction for Scientists and Engineers</em>. Oxford University Press.</li>
+  <li>Batchelor, G. K. (1967). <em>An Introduction to Fluid Dynamics</em>. Cambridge University Press.</li>
+</ul>
+
+<p>For implementation details revisit <a href="/numerical-methods/">Numerical Methods</a>.</p>

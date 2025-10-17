@@ -1,0 +1,241 @@
+<h1 id="api-reference">API Reference</h1>
+
+<p>This reference documents the public C API exposed by the finite-difference and spectral solvers. Types referenced below originate from <a href="../include/common_types.h"><code class="language-plaintext highlighter-rouge">include/common_types.h</code></a>.</p>
+
+<ul>
+  <li>See <a href="/usage-guide/">Usage Guide</a> for practical walkthroughs.</li>
+  <li>Mathematical notation is discussed in <a href="mathematical_formulation.md">Mathematical Formulation</a>.</li>
+</ul>
+
+<h2 id="common-types">Common Types</h2>
+
+<h3 id="solverstatus"><code class="language-plaintext highlighter-rouge">SolverStatus</code></h3>
+
+<p>Enum indicating the outcome of a solver step:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SOLVER_SUCCESS</code></td>
+      <td>Step converged normally.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SOLVER_MAX_ITER</code></td>
+      <td>Newton iteration hit the maximum iteration count.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SOLVER_DIVERGED</code></td>
+      <td>Residual grew or stagnated.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SOLVER_MEM_ERROR</code></td>
+      <td>Memory allocation failed.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SOLVER_INVALID_PARAM</code></td>
+      <td>Illegal parameter detected (e.g., negative grid size).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="solverstats"><code class="language-plaintext highlighter-rouge">SolverStats</code></h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">double</span> <span class="n">energy</span><span class="p">;</span>
+    <span class="kt">double</span> <span class="n">enstrophy</span><span class="p">;</span>
+    <span class="kt">double</span> <span class="n">max_velocity</span><span class="p">;</span>
+    <span class="kt">double</span> <span class="n">max_divergence</span><span class="p">;</span>
+    <span class="kt">double</span> <span class="n">residual</span><span class="p">;</span>
+    <span class="kt">int</span>    <span class="n">iterations</span><span class="p">;</span>
+    <span class="kt">double</span> <span class="n">cpu_time</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">SolverStats</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Used to report diagnostics to calling code.</p>
+
+<hr />
+
+<h2 id="finite-difference-module-ns_fd_solverh">Finite-Difference Module (<code class="language-plaintext highlighter-rouge">ns_fd_solver.h</code>)</h2>
+
+<h3 id="nsfinitediffdata-ns_fd_allocateint-nx-int-ny-double-l-double-h-double-re"><code class="language-plaintext highlighter-rouge">NSFiniteDiffData* ns_fd_allocate(int nx, int ny, double L, double H, double Re);</code></h3>
+<ul>
+  <li><strong>Description:</strong> Allocates and initialises a finite-difference solver context for a rectangular domain.</li>
+  <li><strong>Parameters:</strong>
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">nx</code>, <code class="language-plaintext highlighter-rouge">ny</code>: grid points in $x$ and $y$ (must be $\ge 3$).</li>
+      <li><code class="language-plaintext highlighter-rouge">L</code>, <code class="language-plaintext highlighter-rouge">H</code>: domain lengths.</li>
+      <li><code class="language-plaintext highlighter-rouge">Re</code>: Reynolds number (positive).</li>
+    </ul>
+  </li>
+  <li><strong>Returns:</strong> Pointer to an owning <code class="language-plaintext highlighter-rouge">NSFiniteDiffData</code> or <code class="language-plaintext highlighter-rouge">NULL</code> on allocation failure.</li>
+  <li><strong>Notes:</strong> Arrays are zeroed. Default boundary conditions are no-slip with unit lid velocity.</li>
+</ul>
+
+<h3 id="void-ns_fd_freensfinitediffdata-data"><code class="language-plaintext highlighter-rouge">void ns_fd_free(NSFiniteDiffData *data);</code></h3>
+<p>Releases all memory associated with <code class="language-plaintext highlighter-rouge">data</code>. Safe to call with <code class="language-plaintext highlighter-rouge">NULL</code>.</p>
+
+<h3 id="initialisation-utilities">Initialisation Utilities</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">void ns_fd_initialize_lid_cavity(NSFiniteDiffData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_fd_initialize_taylor_green(NSFiniteDiffData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_fd_apply_boundary_conditions(NSFiniteDiffData *data);</code></li>
+</ul>
+
+<p>These routines set initial fields and impose boundary values. Call immediately after allocation or before restarting a run. <code class="language-plaintext highlighter-rouge">ns_fd_apply_boundary_conditions</code> should be invoked whenever ghost cells or boundary nodes need updating (e.g., after Newton updates).</p>
+
+<h3 id="newton-and-linear-algebra">Newton and Linear Algebra</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">SolverStatus ns_fd_newton_raphson_step(NSFiniteDiffData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">double ns_fd_compute_residual(NSFiniteDiffData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_fd_assemble_jacobian(NSFiniteDiffData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_fd_solve_linear_system(NSFiniteDiffData *data, double *delta);</code></li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">ns_fd_newton_raphson_step</code> performs one Newton iteration internally calling the latter helpers. Use <code class="language-plaintext highlighter-rouge">ns_fd_compute_residual</code> to monitor convergence between iterations.</p>
+
+<h3 id="time-advancement">Time Advancement</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">SolverStatus ns_fd_advance_timestep(NSFiniteDiffData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">double ns_fd_adaptive_timestep(NSFiniteDiffData *data);</code></li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">ns_fd_advance_timestep</code> wraps Newton solve, updates <code class="language-plaintext highlighter-rouge">data-&gt;t</code>, <code class="language-plaintext highlighter-rouge">data-&gt;dt</code>, and preserves previous states for convergence checks. <code class="language-plaintext highlighter-rouge">ns_fd_adaptive_timestep</code> implements the CFL/viscous heuristic; override <code class="language-plaintext highlighter-rouge">data-&gt;dt</code> if necessary before calling <code class="language-plaintext highlighter-rouge">ns_fd_advance_timestep</code>.</p>
+
+<h3 id="diagnostics-and-output">Diagnostics and Output</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">void ns_fd_compute_stats(NSFiniteDiffData *data, SolverStats *stats);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_fd_analyze_convergence(NSFiniteDiffData *data, int step);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_fd_output_solution(NSFiniteDiffData *data, const char *filename);</code></li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">ns_fd_output_solution</code> writes columns <code class="language-plaintext highlighter-rouge">x y u v p</code> to a text file. Example usage:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NSFiniteDiffData</span> <span class="o">*</span><span class="n">sim</span> <span class="o">=</span> <span class="n">ns_fd_allocate</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">ns_fd_initialize_lid_cavity</span><span class="p">(</span><span class="n">sim</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="mi">5000</span><span class="p">;</span> <span class="o">++</span><span class="n">step</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ns_fd_advance_timestep</span><span class="p">(</span><span class="n">sim</span><span class="p">)</span> <span class="o">!=</span> <span class="n">SOLVER_SUCCESS</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">step</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">SolverStats</span> <span class="n">stats</span><span class="p">;</span>
+        <span class="n">ns_fd_compute_stats</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">stats</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"t=%g, residual=%e</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">sim</span><span class="o">-&gt;</span><span class="n">t</span><span class="p">,</span> <span class="n">stats</span><span class="p">.</span><span class="n">residual</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">ns_fd_output_solution</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="s">"results/fd_snapshot.dat"</span><span class="p">);</span>
+<span class="n">ns_fd_free</span><span class="p">(</span><span class="n">sim</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="spectral-module-ns_spectral_solverh">Spectral Module (<code class="language-plaintext highlighter-rouge">ns_spectral_solver.h</code>)</h2>
+
+<h3 id="nsspectraldata-ns_spectral_allocateint-nx-int-ny-double-lx-double-ly-double-re"><code class="language-plaintext highlighter-rouge">NSSpectralData* ns_spectral_allocate(int nx, int ny, double Lx, double Ly, double Re);</code></h3>
+<p>Allocates spectral solver structures. <code class="language-plaintext highlighter-rouge">nx</code> should be even; <code class="language-plaintext highlighter-rouge">ny</code> must match FFT plan requirements.</p>
+
+<h3 id="void-ns_spectral_freensspectraldata-data"><code class="language-plaintext highlighter-rouge">void ns_spectral_free(NSSpectralData *data);</code></h3>
+<p>Destroys FFT plans, frees arrays, and calls <code class="language-plaintext highlighter-rouge">fftw_cleanup()</code>.</p>
+
+<h3 id="grid-and-transforms">Grid and Transforms</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_initialize_grids(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_initialize_fft_plans(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_initialize_taylor_green(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_physical_to_spectral(NSSpectralData *data, double *field, fftw_complex *field_hat);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_spectral_to_physical(NSSpectralData *data, fftw_complex *field_hat, double *field);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_apply_dealiasing(NSSpectralData *data, fftw_complex *field_hat);</code></li>
+</ul>
+
+<p>The transform utilities expect arrays of size <code class="language-plaintext highlighter-rouge">nx*ny</code> (real) or <code class="language-plaintext highlighter-rouge">nkx*nky</code> (complex). Always call <code class="language-plaintext highlighter-rouge">ns_spectral_initialize_grids</code> and <code class="language-plaintext highlighter-rouge">ns_spectral_initialize_fft_plans</code> once after allocation.</p>
+
+<h3 id="core-operators">Core Operators</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_compute_derivatives(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_compute_velocity_from_vorticity(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_compute_nonlinear_terms(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_compute_velocity_from_vorticity(NSSpectralData *data);</code></li>
+</ul>
+
+<p>These routines populate <code class="language-plaintext highlighter-rouge">u</code>, <code class="language-plaintext highlighter-rouge">v</code>, <code class="language-plaintext highlighter-rouge">omega</code>, and <code class="language-plaintext highlighter-rouge">nonlinear_hat</code> in-place. <code class="language-plaintext highlighter-rouge">ns_spectral_compute_derivatives</code> internally updates velocity and vorticity fields consistent with the latest spectral coefficients.</p>
+
+<h3 id="time-integration">Time Integration</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_advance_rk4(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">double ns_spectral_compute_cfl_timestep(NSSpectralData *data);</code></li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">ns_spectral_advance_rk4</code> expects <code class="language-plaintext highlighter-rouge">data-&gt;dt</code> to be set and advances <code class="language-plaintext highlighter-rouge">omega_hat</code>, updating <code class="language-plaintext highlighter-rouge">t</code>. Call <code class="language-plaintext highlighter-rouge">ns_spectral_compute_cfl_timestep</code> beforehand to choose a stable <code class="language-plaintext highlighter-rouge">dt</code>.</p>
+
+<h3 id="analysis-and-output">Analysis and Output</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">double ns_spectral_compute_energy(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">double ns_spectral_compute_enstrophy(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_analyze_convergence(NSSpectralData *data, int step);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_analyze_spectrum(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">int ns_spectral_check_resolution(NSSpectralData *data);</code></li>
+  <li><code class="language-plaintext highlighter-rouge">void ns_spectral_output_solution(NSSpectralData *data, const char *filename);</code></li>
+</ul>
+
+<p>Example usage:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NSSpectralData</span> <span class="o">*</span><span class="n">spec</span> <span class="o">=</span> <span class="n">ns_spectral_allocate</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">M_PI</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">M_PI</span><span class="p">,</span> <span class="mi">4000</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">ns_spectral_initialize_grids</span><span class="p">(</span><span class="n">spec</span><span class="p">);</span>
+<span class="n">ns_spectral_initialize_fft_plans</span><span class="p">(</span><span class="n">spec</span><span class="p">);</span>
+<span class="n">ns_spectral_initialize_taylor_green</span><span class="p">(</span><span class="n">spec</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="mi">2000</span><span class="p">;</span> <span class="o">++</span><span class="n">step</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">spec</span><span class="o">-&gt;</span><span class="n">dt</span> <span class="o">=</span> <span class="n">ns_spectral_compute_cfl_timestep</span><span class="p">(</span><span class="n">spec</span><span class="p">);</span>
+    <span class="n">ns_spectral_advance_rk4</span><span class="p">(</span><span class="n">spec</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">step</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"t=%g, E=%g</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">spec</span><span class="o">-&gt;</span><span class="n">t</span><span class="p">,</span> <span class="n">ns_spectral_compute_energy</span><span class="p">(</span><span class="n">spec</span><span class="p">));</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">ns_spectral_output_solution</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="s">"results/spectral_final_solution.dat"</span><span class="p">);</span>
+<span class="n">ns_spectral_free</span><span class="p">(</span><span class="n">spec</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="time-integration-utilities-time_integrationh">Time Integration Utilities (<code class="language-plaintext highlighter-rouge">time_integration.h</code>)</h2>
+
+<p>These helper functions operate on scalar values and can be reused by external modules.</p>
+
+<h3 id="double-compute_cfl_conditiondouble-max_u-double-max_v-double-dx-double-dy-double-cfl_factor"><code class="language-plaintext highlighter-rouge">double compute_cfl_condition(double max_u, double max_v, double dx, double dy, double cfl_factor);</code></h3>
+<p>Computes a stability-limited timestep $\Delta t$ based on advective speeds.</p>
+
+<h3 id="double-compute_viscous_timestepdouble-dx-double-dy-double-re"><code class="language-plaintext highlighter-rouge">double compute_viscous_timestep(double dx, double dy, double Re);</code></h3>
+<p>Returns the viscous limit $0.5\,\mathrm{Re}\,\Delta x\Delta y/(\Delta x + \Delta y)$.</p>
+
+<h3 id="double-adaptive_timestepdouble-max_vel-double-dx-double-dy-double-re-adaptivetimeparams-params"><code class="language-plaintext highlighter-rouge">double adaptive_timestep(double max_vel, double dx, double dy, double Re, AdaptiveTimeParams *params);</code></h3>
+<p>Combines advective and viscous limits with user-defined safety factors (see struct <code class="language-plaintext highlighter-rouge">AdaptiveTimeParams</code>).</p>
+
+<p><strong>Example:</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">AdaptiveTimeParams</span> <span class="n">params</span> <span class="o">=</span> <span class="p">{.</span><span class="n">cfl_factor</span> <span class="o">=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="p">,</span> <span class="p">.</span><span class="n">dt_min</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="p">.</span><span class="n">dt_max</span> <span class="o">=</span> <span class="mf">1e-1</span><span class="p">,</span>
+                             <span class="p">.</span><span class="n">safety_factor</span> <span class="o">=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">9</span><span class="p">,</span> <span class="p">.</span><span class="n">adapt_enabled</span> <span class="o">=</span> <span class="mi">1</span><span class="p">};</span>
+<span class="kt">double</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">adaptive_timestep</span><span class="p">(</span><span class="n">max_vel</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">Re</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">params</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="notes--caveats">Notes &amp; Caveats</h2>
+
+<ul>
+  <li>Functions returning pointers transfer ownership to the caller; invoke the corresponding <code class="language-plaintext highlighter-rouge">*_free</code> routine to avoid leaks.</li>
+  <li>File output routines overwrite existing files. Use unique filenames per snapshot if accumulation is desired.</li>
+  <li>Spectral routines require FFTW initialisation; link with <code class="language-plaintext highlighter-rouge">-lfftw3</code> and call <code class="language-plaintext highlighter-rouge">fftw_cleanup()</code> only once the simulation is finished.</li>
+  <li>Jacobian assembly assumes structured Cartesian grids; extending to non-uniform meshes requires re-deriving difference operators.</li>
+</ul>
+
+<p>For further reading, consult <a href="/benchmark-results/">Benchmark Results</a> to see how these APIs were used to produce validation data.</p>

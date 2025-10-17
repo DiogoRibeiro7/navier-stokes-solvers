@@ -1,0 +1,13 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 360' role='img' aria-labelledby='gallery_turbulence_title gallery_turbulence_desc'>
+  <title id='gallery_turbulence_title'>2D Turbulence</title>
+  <desc id='gallery_turbulence_desc'>Energy cascade snapshot</desc>
+  <defs>
+    <linearGradient id='gallery_turbulence_gradient' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#14213d' stop-opacity='0.85'/>
+      <stop offset='100%' stop-color='#fca311' stop-opacity='0.85'/>
+    </linearGradient>
+  </defs>
+  <rect width='600' height='360' fill='url(#gallery_turbulence_gradient)' rx='18'/>
+  <text x='50%' y='52%' text-anchor='middle' font-family="'Segoe UI',sans-serif" font-size='32' fill='#ffffff' opacity='0.95'>2D Turbulence</text>
+  <text x='50%' y='72%' text-anchor='middle' font-family="'Segoe UI',sans-serif" font-size='18' fill='#f0f4ff' opacity='0.85'>k^{-5/3} spectrum</text>
+</svg>

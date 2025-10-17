@@ -1,0 +1,67 @@
+<h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
+
+<blockquote>
+  <p>For setup steps refer to the <a href="/usage-guide/">Usage Guide</a>; for theoretical insight see <a href="/theory-background/">Theory Background</a>.</p>
+</blockquote>
+
+<h2 id="installation">Installation</h2>
+
+<p><strong>Q:</strong> <em>What dependencies do I need?</em></p>
+
+<p><strong>A:</strong> GCC/Clang, Make, FFTW3 (for spectral solver), Python 3.9+ with packages listed in <code class="language-plaintext highlighter-rouge">scripts/requirements.txt</code>.</p>
+
+<p><strong>Q:</strong> <em>FFTW is missing on my system. What do I do?</em></p>
+
+<p><strong>A:</strong> Install via package manager (e.g., <code class="language-plaintext highlighter-rouge">sudo apt install libfftw3-dev</code> on Ubuntu) or build from source with <code class="language-plaintext highlighter-rouge">--enable-shared</code>.</p>
+
+<h2 id="compilation">Compilation</h2>
+
+<p><strong>Q:</strong> <em><code class="language-plaintext highlighter-rouge">make spectral</code> fails with linker errors.</em></p>
+
+<p><strong>A:</strong> Ensure <code class="language-plaintext highlighter-rouge">-lfftw3</code> is discoverable. Set <code class="language-plaintext highlighter-rouge">LIBRARY_PATH</code> or edit <code class="language-plaintext highlighter-rouge">Makefile</code> to add the correct library directory.</p>
+
+<p><strong>Q:</strong> <em>Can I use MSVC?</em></p>
+
+<p><strong>A:</strong> Official build system targets POSIX toolchains. On Windows, use WSL or MinGW/MSYS2 with GCC.</p>
+
+<h2 id="runtime-issues">Runtime Issues</h2>
+
+<p><strong>Q:</strong> <em><code class="language-plaintext highlighter-rouge">SOLVER_DIVERGED</code> during FD runs.</em></p>
+
+<p><strong>A:</strong> Reduce <code class="language-plaintext highlighter-rouge">MAX_DT</code>, refine the grid, or lower Reynolds number. Check that boundary conditions are consistent.</p>
+
+<p><strong>Q:</strong> <em>Spectral run produces <code class="language-plaintext highlighter-rouge">nan</code> values.</em></p>
+
+<p><strong>A:</strong> CFL condition violated. Inspect <code class="language-plaintext highlighter-rouge">ns_spectral_compute_cfl_timestep</code> output and cap <code class="language-plaintext highlighter-rouge">dt</code>. Also verify that FFTW wisdom is not corrupted.</p>
+
+<h2 id="results-interpretation">Results Interpretation</h2>
+
+<p><strong>Q:</strong> <em>Where are velocity and pressure fields stored?</em></p>
+
+<p><strong>A:</strong> Final solutions are written to <code class="language-plaintext highlighter-rouge">results/*.dat</code> with columns documented in <a href="usage_guide.md#understanding-output-files">Usage Guide</a>.</p>
+
+<p><strong>Q:</strong> <em>How do I compare against benchmark data?</em></p>
+
+<p><strong>A:</strong> Use <code class="language-plaintext highlighter-rouge">scripts/compare_methods.py</code> to compute $L_2$ and $L_\infty$ metrics. See <a href="/benchmark-results/">Benchmark Results</a> for reference values.</p>
+
+<h2 id="performance">Performance</h2>
+
+<p><strong>Q:</strong> <em>How do I speed up spectral runs?</em></p>
+
+<p><strong>A:</strong> Enable FFTW threading, compile with <code class="language-plaintext highlighter-rouge">-O3 -march=native</code>, and reduce snapshot frequency.</p>
+
+<p><strong>Q:</strong> <em>Memory usage spikes on large grids.</em></p>
+
+<p><strong>A:</strong> Pre-allocate arrays once, avoid copying snapshots unnecessarily, and consult memory estimates in <a href="usage_guide.md#memory-estimates">Usage Guide</a>.</p>
+
+<h2 id="miscellaneous">Miscellaneous</h2>
+
+<p><strong>Q:</strong> <em>Can I run 3D simulations?</em></p>
+
+<p><strong>A:</strong> Not yet; the current codebase targets 2D flows. Contributions are welcome (see <a href="/contributing/">Contributing</a>).</p>
+
+<p><strong>Q:</strong> <em>How do I cite this project?</em></p>
+
+<p><strong>A:</strong> Cite the repository URL and relevant benchmark sections from <a href="/benchmark-results/">Benchmark Results</a>.</p>
+
+<p>Still stuck? Open an issue on GitHub with logs, parameter files, and system details.</p>
