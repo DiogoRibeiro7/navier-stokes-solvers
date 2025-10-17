@@ -1,10 +1,29 @@
 ﻿# Navier-Stokes Solvers
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](TESTING_DOCUMENTATION.md)
-[![CI](https://img.shields.io/github/actions/workflow/status/diogoribeiro7/navier-stokes-solvers/test-and-document.yml?branch=main&label=CI)](https://github.com/diogoribeiro7/navier-stokes-solvers/actions/workflows/test-and-document.yml)
-[![Coverage](https://img.shields.io/badge/coverage-pending-lightgrey.svg)](docs/test_badges.md)
-[![Tests](https://img.shields.io/badge/tests-automated-blue.svg)](TESTING_DOCUMENTATION.md)
+<!-- Build status -->
+[![CI](https://github.com/diogoribeiro7/navier-stokes-solvers/actions/workflows/ci.yml/badge.svg)](https://github.com/diogoribeiro7/navier-stokes-solvers/actions/workflows/ci.yml)
+
+<!-- Coverage -->
+[![Coverage Status](https://img.shields.io/codecov/c/github/diogoribeiro7/navier-stokes-solvers/main.svg)](https://codecov.io/gh/diogoribeiro7/navier-stokes-solvers)
+
+<!-- License -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+<!-- DOI -->
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXXX-blue.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+
+<!-- Downloads -->
+[![GitHub all releases](https://img.shields.io/github/downloads/diogoribeiro7/navier-stokes-solvers/total.svg)](https://github.com/diogoribeiro7/navier-stokes-solvers/releases)
+
+<!-- Documentation -->
+[![Docs](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://diogoribeiro7.github.io/navier-stokes-solvers/)
+
+<!-- Tests -->
+[![Tests](https://img.shields.io/github/actions/workflow/status/diogoribeiro7/navier-stokes-solvers/tests.yml?label=tests)](https://github.com/diogoribeiro7/navier-stokes-solvers/actions/workflows/tests.yml)
+
+<!-- GitHub stars/forks -->
+[![GitHub stars](https://img.shields.io/github/stars/diogoribeiro7/navier-stokes-solvers.svg?style=social)](https://github.com/diogoribeiro7/navier-stokes-solvers/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/diogoribeiro7/navier-stokes-solvers.svg?style=social)](https://github.com/diogoribeiro7/navier-stokes-solvers/network/members)
 
 This repository hosts complementary implementations of the two-dimensional incompressible Navier-Stokes equations:
 
