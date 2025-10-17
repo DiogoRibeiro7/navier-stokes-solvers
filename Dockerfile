@@ -1,7 +1,7 @@
 # Navier-Stokes Solvers Docker Image
 # Provides complete build environment with all dependencies
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 LABEL maintainer="Diogo Ribeiro <dfr@esmad.ipp.pt>"
 LABEL description="High-performance Navier-Stokes solvers with spectral and finite difference methods"
