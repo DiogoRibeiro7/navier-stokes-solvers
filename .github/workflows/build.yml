@@ -5,22 +5,68 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    strategy:
+      fail-fast: false
+      matrix:
+        hdf5: [on, off]
+
+    env:
+      # Used by Makefile to choose real vs stub implementation
+      ENABLE_HDF5: ${{ matrix.hdf5 == 'on' && '1' || '0' }}
+
     steps:
-    - uses: actions/checkout@v5
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc libfftw3-dev
-    
-    - name: Build finite difference solver
-      run: make fd
-    
-    - name: Build spectral solver
-      run: make spectral
-    
-    - name: Run basic tests
-      run: |
-        ./bin/ns_fd_solver || true
-        ./bin/ns_spectral_solver || true
+      - uses: actions/checkout@v5
+
+      - name: Install base dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc libfftw3-dev pkg-config
+
+      - name: Install HDF5 (only when matrix.hdf5 == on)
+        if: matrix.hdf5 == 'on'
+        run: |
+          sudo apt-get install -y libhdf5-dev hdf5-tools
+
+      - name: Show build configuration
+        run: |
+          echo "ENABLE_HDF5=${ENABLE_HDF5}"
+          if [ "$ENABLE_HDF5" = "1" ]; then
+            echo "HDF5 version via pkg-config:"
+            pkg-config --modversion hdf5 || true
+          fi
+
+      - name: Build finite difference solver
+        run: |
+          make clean
+          make fd ENABLE_HDF5=${ENABLE_HDF5}
+
+      - name: Build spectral solver
+        run: |
+          make spectral ENABLE_HDF5=${ENABLE_HDF5}
+
+      - name: Run basic tests (fail if test runner reports none)
+        run: |
+          set -euo pipefail
+
+          run_and_check () {
+            local bin="$1"
+            if [ ! -x "$bin" ]; then
+              echo "::error title=${bin} not found::Binary missing" >&2
+              exit 1
+            fi
+            echo ">>> Running $bin"
+            # Capture output to inspect for the typical "No tests were run" message.
+            # Adjust the grep if your test runner prints a different marker.
+            set +e
+            "$bin" 2>&1 | tee /tmp/test.out
+            rc=${PIPESTATUS[0]}
+            set -e
+            if grep -qi "No tests were run" /tmp/test.out; then
+              echo "::error title=No tests were run::$bin reported zero tests"
+              exit 2
+            fi
+            exit $rc
+          }
+
+          run_and_check ./bin/ns_fd_solver
+          run_and_check ./bin/ns_spectral_solver
