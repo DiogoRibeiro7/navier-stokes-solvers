@@ -67,7 +67,7 @@ jobs:
           timeout 10 ./bin/ns_fd_solver || echo "Valgrind check completed"
     
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: binaries-${{ matrix.os }}-${{ matrix.compiler }}
         path: bin/
