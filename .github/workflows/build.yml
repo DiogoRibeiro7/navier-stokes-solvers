@@ -15,7 +15,7 @@ jobs:
       ENABLE_HDF5: ${{ matrix.hdf5 == 'on' && '1' || '0' }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install base dependencies
         run: |
