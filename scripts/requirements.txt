@@ -28,5 +28,5 @@ jupyter>=1.0.0
 
 # Code quality (optional)
 black>=23.0.0
-flake8>=6.0.0
+flake8>=7.4.1
 mypy>=1.0.0
