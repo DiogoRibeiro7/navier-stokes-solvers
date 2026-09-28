@@ -20,7 +20,7 @@ mayavi>=4.8.0; python_version >= '3.8'
 
 # Optional: Animation
 pillow>=9.5.0
-tqdm>=4.66.0
+tqdm>=4.70.1
 
 # Development tools
 ipython>=8.12.0
